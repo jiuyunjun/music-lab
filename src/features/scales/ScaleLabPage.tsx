@@ -1,7 +1,8 @@
 import { useEffect, useState, type CSSProperties } from 'react';
 import { Note } from 'tonal';
 import { withAudio } from '../../audio/engine';
-import { getInstrument } from '../../audio/instruments';
+import { drumsAsInstrument } from '../../audio/drums';
+import { getInstrument, type Instrument } from '../../audio/instruments';
 import { playEvents, stopPhrase } from '../../audio/sequencer';
 import { PianoKeyboard, type KeyMark } from '../../components/PianoKeyboard';
 import { useComputerKeyboard } from '../../components/useComputerKeyboard';
@@ -20,7 +21,7 @@ import {
   simplestRoot,
   type ModeId,
 } from '../../theory/modes';
-import type { ArrangedEvent } from '../../theory/patterns';
+import type { ArrangedEvent, TrackId } from '../../theory/patterns';
 import { modeDemoEvents, scaleRunEvents, vampChords } from './demoArrangement';
 import styles from './ScaleLabPage.module.css';
 
@@ -76,7 +77,13 @@ export function ScaleLabPage() {
 
   const play = (events: ArrangedEvent[], bpm: number) => {
     setPlaying(true);
-    const band = { melody: instrument, chords: getInstrument('pad'), bass: getInstrument('bass') };
+    const band: Record<TrackId, Instrument> = {
+      melody: instrument,
+      counter: instrument,
+      chords: getInstrument('pad'),
+      bass: getInstrument('bass'),
+      drums: drumsAsInstrument(),
+    };
     void playEvents(events, (e) => band[e.track], {
       bpm,
       onNote: (e) => e.track === 'melody' && setLit(new Set([keyId(e.note)])),

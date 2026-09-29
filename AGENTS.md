@@ -48,6 +48,9 @@ npm run lint       # ESLint + tsc --noEmit
 - `audio/drums.ts`：`getDrumKit().hit(piece, time, velocity)`，纯合成鼓组
 - `audio/sequencer.ts` 的 `startStepLoop` 每个十六分音符回调一次并实时读取鼓型；`NoteEvent.offset`（秒）用于扫弦的弦间延迟
 - 乐器房路由：`/play`（键盘）、`/play/guitar`、`/play/drums`
+- 编曲：`theory/song.ts` 的 `buildSong(spec)` 把四轨 × 多遍 × 编曲技巧组装成一条事件流（纯函数，有测试）；`theory/melody.ts`（种子旋律）、`theory/bass.ts`（贝斯型）、`theory/random.ts`（mulberry32）
+- `features/arrange/project.ts`：`Project` 模型、`sanitizeProject`（分享链接和 localStorage 都是不可信输入，必须过它）、`encodeProject`/`decodeProject`
+- 鼓通过 `drumsAsInstrument()` 适配成 `Instrument`，和其他轨道走同一个 `playEvents`；`gainFor` 实现实时静音/独奏/音量
 - 调音量平衡时用真实浏览器测主总线峰值，目标：旋律比伴奏高约 6–8 dB
 - `components/PianoKeyboard`：多点触控 + 滑奏，`markFor` 按级数着色，`lockToScale` 锁定调内音
 - 文案：`content/ui.ts`、`content/modes.ts`

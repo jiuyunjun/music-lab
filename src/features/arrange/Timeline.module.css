@@ -1,0 +1,64 @@
+.wrap {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 8px;
+}
+
+.labels {
+  display: flex;
+  flex-direction: column;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.labels span {
+  display: flex;
+  align-items: center;
+}
+
+.labels span[data-muted='true'] {
+  opacity: 0.35;
+}
+
+.svg {
+  width: 100%;
+  height: 168px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.cycleEven {
+  fill: var(--bg-sunken);
+}
+
+.cycleOdd {
+  fill: color-mix(in srgb, var(--bg-sunken) 85%, var(--border));
+}
+
+.playhead {
+  fill: color-mix(in srgb, var(--accent) 28%, transparent);
+}
+
+.drums {
+  fill: var(--deg-1);
+}
+
+.bass {
+  fill: var(--deg-2);
+}
+
+.harmony {
+  fill: var(--deg-5);
+}
+
+.melody {
+  fill: var(--deg-7);
+}
+
+.melody[data-counter='true'] {
+  fill: var(--deg-6);
+}
+
+rect[data-muted='true'] {
+  opacity: 0.2;
+}

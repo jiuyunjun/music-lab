@@ -1,0 +1,258 @@
+.section {
+  margin-bottom: 20px;
+}
+
+.section h2 {
+  font-size: 20px;
+}
+
+.help {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin: 16px 0 8px;
+}
+
+.notice {
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--accent) 20%, var(--bg-raised));
+}
+
+select {
+  font: inherit;
+  color: inherit;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-raised);
+}
+
+.templates {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.template {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg-raised);
+  text-align: left;
+}
+
+.template small {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.template:hover {
+  border-color: var(--accent);
+}
+
+/* Sticky transport so play/stop is always at hand while editing. */
+.transport {
+  position: sticky;
+  top: 58px;
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg-raised) 92%, transparent);
+  backdrop-filter: blur(8px);
+}
+
+.strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.strip span {
+  min-width: 40px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: 600;
+  background: var(--bg-sunken);
+  border: 2px solid transparent;
+}
+
+.strip span[data-active='true'] {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 22%, var(--bg-sunken));
+}
+
+.spacer {
+  flex: 1;
+}
+
+.fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+}
+
+.fields label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.fields input[type='range'] {
+  accent-color: var(--accent);
+}
+
+.slots {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.slot {
+  font-weight: 600;
+}
+
+.slot[data-active='true'] {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+.small {
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg-sunken);
+  font-size: 13px;
+}
+
+.small[aria-pressed='true'] {
+  background: var(--accent);
+  color: var(--accent-text);
+  border-color: var(--accent);
+}
+
+.small:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.lanes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.lane {
+  border-left: 5px solid var(--lane);
+}
+
+.lane[data-lane='drums'] {
+  --lane: var(--deg-1);
+}
+
+.lane[data-lane='bass'] {
+  --lane: var(--deg-2);
+}
+
+.lane[data-lane='harmony'] {
+  --lane: var(--deg-5);
+}
+
+.lane[data-lane='melody'] {
+  --lane: var(--deg-7);
+}
+
+.laneHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.laneTitle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 17px;
+  margin-right: auto;
+}
+
+.volume {
+  width: 90px;
+  accent-color: var(--lane);
+}
+
+.choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.tricks {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.trick {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 8px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg-sunken);
+  cursor: pointer;
+}
+
+.trick small {
+  grid-column: 2;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.trick[data-on='true'] {
+  border-color: var(--accent);
+}
+
+@media (max-width: 820px) {
+  .lanes,
+  .tricks {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .transport {
+    top: 96px;
+  }
+}

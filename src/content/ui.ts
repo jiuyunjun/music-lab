@@ -13,7 +13,6 @@ export const APP_COPY = {
   volume: '音量',
   audioGate: '点一下任意位置，开启声音 🔈',
   comingSoon: '即将上线',
-  comingSoonBody: '这个模块正在制作中，先去乐器房或音阶实验室玩玩吧。',
   errorTitle: '哎呀，这里出了点问题 😵',
   errorBody: '这个模块遇到了错误，其他页面不受影响。可以点“重试”，或者换个页面再回来。',
   errorRetry: '重试',
@@ -28,7 +27,7 @@ export const HOME_COPY = {
     { to: '/play', title: '乐器房', body: '三角钢琴、电钢、电子管风琴、合成器', ready: true },
     { to: '/scales', title: '音阶实验室', body: 'Dorian、Phrygian……一键听出每种调式的味道', ready: true },
     { to: '/chords', title: '和弦与进行', body: '卡农进行、4536，点一下就响', ready: true },
-    { to: '/arrange', title: '编曲工作台', body: '琶音、扫弦、鼓点……像搭积木一样编曲', ready: false },
+    { to: '/arrange', title: '编曲工作台', body: '琶音、扫弦、鼓点……像搭积木一样编曲', ready: true },
   ],
 };
 
