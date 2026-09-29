@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Chord } from 'tonal';
-import { getInstrument } from '../../audio/instruments';
+import { useInstrument } from '../../components/useInstrument';
 import { playEvents, stopPhrase } from '../../audio/sequencer';
 import { strumNow } from '../../audio/strum';
 import { withAudio } from '../../audio/engine';
@@ -37,7 +37,7 @@ export function GuitarPage() {
   const [ringing, setRinging] = useState<ReadonlySet<number>>(new Set());
   const ringTimer = useRef<number | undefined>(undefined);
 
-  const guitar = getInstrument('guitar');
+  const { instrument: guitar, loaded } = useInstrument('guitar');
   const shape = guitarShape(selected);
   const notes = shape?.notes ?? voiceChord(selected.notes);
 
@@ -108,6 +108,7 @@ export function GuitarPage() {
       <InstrumentTabs />
       <h1>{COPY.title}</h1>
       <p className="muted">{COPY.intro}</p>
+      {!loaded && <p className={styles.loading}>{COPY.loading}</p>}
 
       <section className={`card ${styles.section}`}>
         <div className={styles.label}>{COPY.keyChords(`${root} ${keyMode === 'ionian' ? CHORDS_COPY.major : CHORDS_COPY.minor}`)}</div>

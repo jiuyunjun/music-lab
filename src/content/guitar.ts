@@ -28,6 +28,7 @@ export const GUITAR_COPY = {
   fretboardHelp: '竖线是品丝，点任意位置可以单独拨响那个音。x = 这根弦不弹，o = 空弦。',
   noShape: '这个和弦暂时没有吉他按法，会用钢琴的排列来弹。',
   strumHint: '键盘 ↓ 下扫，↑ 上扫',
+  loading: '吉他采样加载中，先用合成音色顶上…',
 };
 
 export const OPEN_CHORD_NAMES = ['C', 'G', 'D', 'A', 'E', 'Am', 'Em', 'Dm', 'F', 'G7', 'E7', 'A7', 'Cmaj7', 'Dsus4', 'Asus2'];
