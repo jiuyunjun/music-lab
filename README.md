@@ -23,6 +23,10 @@ Music Lab 就是为这一刻准备的：
 
 ## 快速开始
 
+Windows 下直接双击 `start.bat`：首次运行会自动安装依赖，然后启动并打开浏览器。
+
+或者手动：
+
 ```bash
 npm install
 npm run dev     # 打开 http://localhost:5173
