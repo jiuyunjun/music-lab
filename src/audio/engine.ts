@@ -4,11 +4,16 @@ let master: Tone.Volume | null = null;
 let starting: Promise<void> | null = null;
 const startListeners = new Set<() => void>();
 
-/** The single master bus: every instrument connects here, never to the destination directly. */
+/**
+ * The single master bus: every instrument connects here, never to the destination directly.
+ * Chain: volume -> light room reverb -> limiter. A touch of shared reverb puts all
+ * instruments "in the same room", which makes even simple phrases sound musical.
+ */
 export function getMasterBus(): Tone.Volume {
   if (!master) {
     const limiter = new Tone.Limiter(-1).toDestination();
-    master = new Tone.Volume(-6).connect(limiter);
+    const room = new Tone.Reverb({ decay: 2.4, preDelay: 0.02, wet: 0.2 }).connect(limiter);
+    master = new Tone.Volume(-6).connect(room);
   }
   return master;
 }

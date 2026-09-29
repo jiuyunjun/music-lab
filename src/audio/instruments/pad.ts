@@ -5,8 +5,8 @@ import type { Instrument } from './types';
 /** Soft detuned synth pad, also used as the drone under the scale lab. */
 export function createPad(): Instrument {
   const filter = new Tone.Filter(1400, 'lowpass');
-  const reverb = new Tone.Reverb({ decay: 4, wet: 0.35 });
-  const output = new Tone.Volume(-7);
+  const reverb = new Tone.Reverb({ decay: 4, wet: 0.25 });
+  const output = new Tone.Volume(-9);
   filter.chain(reverb, output, getMasterBus());
 
   // A short attack so a quick tap is still clearly audible; the long release keeps it "pad"-like.

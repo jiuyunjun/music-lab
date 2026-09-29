@@ -1,4 +1,4 @@
-export type InstrumentId = 'piano' | 'epiano' | 'organ' | 'pad';
+export type InstrumentId = 'piano' | 'epiano' | 'organ' | 'pad' | 'bass';
 
 export interface Instrument {
   readonly id: InstrumentId;

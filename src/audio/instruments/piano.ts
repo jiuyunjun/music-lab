@@ -13,7 +13,7 @@ function sampleUrls(): Record<string, string> {
 }
 
 export function createPiano(): Instrument {
-  const output = new Tone.Volume(0).connect(getMasterBus());
+  const output = new Tone.Volume(4).connect(getMasterBus());
   let loaded = false;
   let resolveLoaded!: () => void;
   const loadedPromise = new Promise<void>((resolve) => (resolveLoaded = resolve));
