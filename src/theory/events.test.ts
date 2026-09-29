@@ -23,8 +23,8 @@ describe('melodyToEvents', () => {
       [5, 0, 2],
     ]);
     expect(events).toEqual([
-      { time: '0:0:0', note: 'C4', duration: '0:0:4', velocity: 0.8 },
-      { time: '0:0:6', note: 'G4', duration: '0:0:2', velocity: 0.8 },
+      { time: '0:0:0', note: 'C4', duration: '0:0:4', velocity: 0.85 },
+      { time: '0:0:6', note: 'G4', duration: '0:0:2', velocity: 0.62 },
     ]);
   });
 

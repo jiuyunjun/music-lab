@@ -37,7 +37,8 @@ export function melodyToEvents(tonic: string, mode: ModeId, steps: readonly Melo
         time: sixteenths(cursor),
         note: degreeToNote(tonic, mode, degree, octave),
         duration: sixteenths(length),
-        velocity: 0.8,
+        // Phrase-like dynamics: strong downbeats, lighter off-beats.
+        velocity: cursor % 16 === 0 ? 0.85 : cursor % 4 === 0 ? 0.75 : 0.62,
       });
     }
     cursor += length;
