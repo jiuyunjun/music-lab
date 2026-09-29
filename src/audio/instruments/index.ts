@@ -1,5 +1,6 @@
 import { createBass } from './bass';
 import { createEPiano } from './epiano';
+import { createGuitar } from './guitar';
 import { createOrgan, type OrganInstrument } from './organ';
 import { createPad } from './pad';
 import { createPiano } from './piano';
@@ -14,6 +15,7 @@ const factories: Record<InstrumentId, () => Instrument> = {
   organ: createOrgan,
   pad: createPad,
   bass: createBass,
+  guitar: createGuitar,
 };
 
 const cache = new Map<InstrumentId, Instrument>();
