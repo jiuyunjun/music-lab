@@ -1,0 +1,244 @@
+.label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.help {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.keyBar {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: 24px;
+  margin: 16px 0 20px;
+}
+
+.roots {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.roots :global(.button) {
+  justify-content: center;
+  padding: 6px 0;
+}
+
+.slider {
+  width: 100%;
+  accent-color: var(--accent);
+}
+
+.section {
+  margin-bottom: 20px;
+}
+
+.section h2 {
+  font-size: 20px;
+}
+
+/* Diatonic chord buttons, coloured by the degree they start on. */
+.diatonic {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.chord {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 12px 4px;
+  border-radius: 12px;
+  border: 2px solid color-mix(in srgb, var(--c) 45%, transparent);
+  background: color-mix(in srgb, var(--c) 14%, var(--bg-raised));
+  transition: transform 100ms, border-color 100ms;
+}
+
+.chord:hover {
+  transform: translateY(-2px);
+}
+
+.chord[aria-pressed='true'] {
+  border-color: var(--c);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--c) 60%, transparent);
+}
+
+.roman {
+  font-size: 22px;
+  font-weight: 800;
+  font-family: Georgia, 'Times New Roman', serif;
+}
+
+.symbol {
+  font-weight: 600;
+}
+
+.fn {
+  display: inline-block;
+  margin: 2px 4px 0 0;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #1a1620;
+}
+
+.fn[data-fn='T'] {
+  background: var(--deg-4);
+}
+
+.fn[data-fn='SD'] {
+  background: var(--deg-3);
+}
+
+.fn[data-fn='D'] {
+  background: var(--deg-1);
+}
+
+.legendRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  align-items: center;
+  margin-top: 14px;
+  font-size: 13px;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  color: var(--text-muted);
+}
+
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.colours {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.colour {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg-sunken);
+  text-align: left;
+}
+
+.colour:hover,
+.preset:hover {
+  border-color: var(--accent);
+}
+
+.colour[aria-pressed='true'],
+.preset[aria-pressed='true'] {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+.colour small {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.notes {
+  margin: 12px 0 0;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.presets {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.preset {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg-sunken);
+  text-align: left;
+}
+
+.romans {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.player {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.player p {
+  margin: 12px 0 0;
+}
+
+.strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.stripChord {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 56px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--bg-sunken);
+  border: 2px solid transparent;
+  transition: background-color 80ms, border-color 80ms, transform 80ms;
+}
+
+.stripChord small {
+  font-family: Georgia, 'Times New Roman', serif;
+  color: var(--text-muted);
+}
+
+.stripChord[data-active='true'] {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 22%, var(--bg-sunken));
+  transform: translateY(-2px);
+}
+
+@media (max-width: 720px) {
+  .keyBar {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .roots {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .diatonic {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}

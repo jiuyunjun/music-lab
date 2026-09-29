@@ -35,8 +35,15 @@ npm run lint       # ESLint + tsc --noEmit
 
 - `audio/engine.ts`：`ensureAudioStarted()` / `withAudio(fn)` / `getMasterBus()`，所有乐器都连到主总线
 - `audio/instruments/`：`getInstrument(id)` 懒加载并缓存；`piano`（Salamander 采样，加载前用合成音兜底）、`epiano`（FM + tremolo）、`organ`（9 根拉杆加法合成，振荡器低一个八度以容纳 16' 拉杆）、`pad`（也用作 Drone）
-- `audio/sequencer.ts`：`playPhrase(instrument, NoteEvent[])` 用 `Tone.Part` 在 Transport 上播放，`Tone.Draw` 同步高亮
-- `theory/`：`modes.ts`（调式、特征音、相对/平行关系、根音拼写）、`events.ts`（级数旋律 → `NoteEvent[]`）、`keyboard.ts`（键位、电脑键盘映射）
+- `audio/sequencer.ts`：`playEvents(events, instrumentFor, {loop, length, onNote})` 多轨/循环播放，`playPhrase` 是单乐器简写；`Tone.Draw` 同步高亮
+- `audio/engine.ts` 的主总线带一层轻混响（wet 0.2）；新乐器接到主总线即可，不要再各自加大混响
+- `theory/`：
+  - `modes.ts`：调式、特征音、相对/平行关系、根音拼写
+  - `events.ts`：级数旋律 → `NoteEvent[]`
+  - `chords.ts`：`romanToChord`（按主音半音距离解析，`bVII`/`V7`/`vii°` 等）、`diatonicChords`、`harmonicFunctions`、`voiceChord`（声部连接）、`bassNote`
+  - `patterns.ts`：`accompany(chords, {pattern})` → 带 `track`（melody/chords/bass）与 `step` 的事件
+  - `keyboard.ts`：键位、电脑键盘映射
+- 调音量平衡时用真实浏览器测主总线峰值，目标：旋律比伴奏高约 6–8 dB
 - `components/PianoKeyboard`：多点触控 + 滑奏，`markFor` 按级数着色，`lockToScale` 锁定调内音
 - 文案：`content/ui.ts`、`content/modes.ts`
 

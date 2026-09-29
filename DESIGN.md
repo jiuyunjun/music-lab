@@ -46,7 +46,9 @@
 **核心交互：调式明暗条**（v1 实现为一条从明亮到暗淡排序的 7 格条，而不是圆形转盘——明暗顺序本身就是知识点）
 
 - 选择根音（默认 D，呼应 D Dorian）→ 切换 7 种调式：Lydian → Ionian → Mixolydian → Dorian → Aeolian → Phrygian → Locrian。
-- 每切一次，自动播放该调式的**自创示范短旋律**；另有“听音阶”按钮。旋律以级数编写（`content/modes.ts`），所以任何根音都能用。
+- 每切一次，自动播放该调式的**自创示范**：5 小节旋律，伴奏是该调式的**标志和弦来回**（vamp，第二个和弦包含特征音）+ 贝斯。旋律以级数编写（`content/modes.ts`），所以任何根音都能用。
+  - Ionian I–V · Dorian i–IV · Phrygian i–♭II · Lydian I–II · Mixolydian I–♭VII · Aeolian i–♭VI · Locrian i°–♭V
+  - **为什么必须有伴奏**：调式的味道来自旋律与主音的关系。只放旋律时耳朵会自动按最熟悉的大调去听（D Dorian 会听成 C 大调）。提供“带伴奏”开关，让用户亲耳验证这一点。
 - 根音拼写自动选择升降号更少的写法（例如 D# Phrygian 而非 Eb Phrygian）。
 - **特征音高亮**：每个调式标出让它“有味道”的那个音
   - Dorian：大六度（小调却带一丝明亮）

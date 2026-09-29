@@ -26,7 +26,7 @@ export const HOME_COPY = {
   cards: [
     { to: '/play', title: '乐器房', body: '三角钢琴、电钢、电子管风琴、合成器', ready: true },
     { to: '/scales', title: '音阶实验室', body: 'Dorian、Phrygian……一键听出每种调式的味道', ready: true },
-    { to: '/chords', title: '和弦与进行', body: '卡农进行、4536，点一下就响', ready: false },
+    { to: '/chords', title: '和弦与进行', body: '卡农进行、4536，点一下就响', ready: true },
     { to: '/arrange', title: '编曲工作台', body: '琶音、扫弦、鼓点……像搭积木一样编曲', ready: false },
   ],
 };
@@ -36,6 +36,7 @@ export const INSTRUMENT_COPY: Record<InstrumentId, { name: string; blurb: string
   epiano: { name: '电钢琴', blurb: 'Rhodes 风格，温暖圆润，Lo-fi 和 R&B 的灵魂。' },
   organ: { name: '电子管风琴', blurb: 'Hammond 风格。拉杆越往上，对应的泛音越响——试着调出你自己的音色。' },
   pad: { name: '合成器铺底', blurb: '柔和绵长的合成器音色，适合按住和弦慢慢听。' },
+  bass: { name: '合成贝斯', blurb: '低沉圆润的贝斯，编曲里的“地基”。往低八度弹效果最好。' },
 };
 
 export const PLAY_COPY = {

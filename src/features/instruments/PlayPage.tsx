@@ -8,7 +8,7 @@ import { INSTRUMENT_COPY, PLAY_COPY } from '../../content/ui';
 import { useAppStore } from '../../store';
 import styles from './PlayPage.module.css';
 
-const INSTRUMENT_IDS: InstrumentId[] = ['piano', 'epiano', 'organ', 'pad'];
+const INSTRUMENT_IDS: InstrumentId[] = ['piano', 'epiano', 'organ', 'pad', 'bass'];
 
 export function PlayPage() {
   const instrumentId = useAppStore((s) => s.instrument);
