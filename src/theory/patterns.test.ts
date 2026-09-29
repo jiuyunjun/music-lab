@@ -30,6 +30,18 @@ describe('accompany', () => {
     expect(accompany([chords[0]!], { pattern: 'arpeggio', bass: false })).toHaveLength(8);
   });
 
+  it('strum follows D-DU-UDU with guitar voicing and string spread', () => {
+    const events = accompany([chords[0]!], { pattern: 'strum', bass: false, strumPattern: 'D-DU-UDU' });
+    const hits = [...new Set(events.map((e) => e.time))];
+    expect(hits).toEqual(['0:0:0', '0:0:4', '0:0:6', '0:0:10', '0:0:12', '0:0:14']);
+    const firstDown = events.filter((e) => e.time === '0:0:0');
+    expect(firstDown.map((e) => e.note)).toEqual(['C3', 'E3', 'G3', 'C4', 'E4']); // open C, low to high
+    expect(firstDown.map((e) => e.offset ?? 0)).toEqual([0, 0.012, 0.024, 0.036, 0.048]);
+    const firstUp = events.filter((e) => e.time === '0:0:6');
+    expect(firstUp.map((e) => e.note)).toEqual(['E4', 'C4', 'G3', 'E3']); // top four, high to low
+    expect(firstDown[0]!.duration).toBe('0:0:4'); // rings until the next strum
+  });
+
   it('respects beatsPerChord', () => {
     const events = accompany(chords, { pattern: 'pad', beatsPerChord: 2 });
     expect(events.find((e) => e.step === 1)?.time).toBe('0:0:8');

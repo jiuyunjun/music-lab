@@ -7,6 +7,8 @@ export interface NoteEvent {
   note: string;
   duration: string;
   velocity: number;
+  /** Extra delay in seconds after `time`, e.g. the spread between strings in a strum. */
+  offset?: number;
 }
 
 /**
