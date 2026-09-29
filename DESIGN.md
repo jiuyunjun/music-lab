@@ -32,7 +32,7 @@
 | --- | --- | --- | --- |
 | 钢琴 | 三角钢琴 | `Tone.Sampler` + Salamander 采样 | 屏幕键盘（多点触控）、电脑键盘映射、Web MIDI（进阶） |
 | | 电钢（Rhodes 风格） | FM 合成 + 颤音 / 可换采样 | 同上 |
-| | 电子管风琴（Hammond 风格） | 加法合成（拉杆 drawbar）+ 旋转扬声器（Leslie）近似 | 可调拉杆，直观“调音色” |
+| | 电子管风琴（Hammond 风格） | 加法合成（拉杆 drawbar）+ 旋转扬声器（Leslie）近似 | 可调拉杆（为新手改为“往上 = 更响”，与真实风琴相反）+ 预设 |
 | | 合成器 Pad / Lead | `Tone.PolySynth` | 滤波器、包络旋钮 |
 | 吉他 | 尼龙 / 钢弦 / 失真 | v1：`PluckSynth`（Karplus-Strong）；v2：采样 | 指板视图、和弦按法、扫弦（上/下扫，含弦间延迟） |
 | 打击乐 | 鼓组（底鼓、军鼓、踩镲、通鼓、镲片）、手打乐器 | CC0 采样 + 合成兜底 | 鼓垫、16 步音序器 |
@@ -43,10 +43,11 @@
 
 ### 3.2 音阶 / 调式实验室（Scales & Modes）
 
-**核心交互：调式转盘**
+**核心交互：调式明暗条**（v1 实现为一条从明亮到暗淡排序的 7 格条，而不是圆形转盘——明暗顺序本身就是知识点）
 
-- 选择根音（默认 D，呼应 D Dorian）→ 转盘切换 7 种调式：Ionian、Dorian、Phrygian、Lydian、Mixolydian、Aeolian、Locrian。
-- 每切一次，自动播放：上行音阶 + 一段该调式的**自创示范短旋律** + 一个持续低音（drone）上的即兴。
+- 选择根音（默认 D，呼应 D Dorian）→ 切换 7 种调式：Lydian → Ionian → Mixolydian → Dorian → Aeolian → Phrygian → Locrian。
+- 每切一次，自动播放该调式的**自创示范短旋律**；另有“听音阶”按钮。旋律以级数编写（`content/modes.ts`），所以任何根音都能用。
+- 根音拼写自动选择升降号更少的写法（例如 D# Phrygian 而非 Eb Phrygian）。
 - **特征音高亮**：每个调式标出让它“有味道”的那个音
   - Dorian：大六度（小调却带一丝明亮）
   - Phrygian：小二度（西班牙/神秘感）

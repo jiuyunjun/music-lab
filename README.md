@@ -21,6 +21,18 @@ Music Lab 就是为这一刻准备的：
 | [docs/ROADMAP.md](docs/ROADMAP.md) | 里程碑与待办 |
 | [docs/CURRICULUM.md](docs/CURRICULUM.md) | 乐理内容大纲（教什么、按什么顺序教） |
 
+## 快速开始
+
+```bash
+npm install
+npm run dev     # 打开 http://localhost:5173
+```
+
+电脑键盘弹奏：`A W S E D F T G Y H U J K`，`Z / X` 切换八度。
+
 ## 状态
 
-🚧 立项阶段，尚未开始编码。技术栈规划：Vite + React + TypeScript + Tone.js + tonal。
+✅ M1 最小可玩版本：乐器房（钢琴 / 电钢 / 电子管风琴 / 合成器）+ 音阶实验室（7 种调式、平行/相对对比、Drone 即兴）。
+🚧 下一步：和弦与进行（卡农进行等），见 [ROADMAP](docs/ROADMAP.md)。
+
+技术栈：Vite + React 19 + TypeScript + Tone.js + tonal + Zustand。

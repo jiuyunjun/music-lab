@@ -4,18 +4,22 @@
 
 ## M0 立项与脚手架
 - [x] git init，基础文档（README / AGENTS / DESIGN / ROADMAP / CURRICULUM）
-- [ ] Vite + React + TS 脚手架，ESLint / Prettier / Vitest
-- [ ] 安装 Tone.js、tonal、Zustand
-- [ ] `audio/engine.ts`：`ensureAudioStarted()`、主输出链（音量 + limiter）
-- [ ] 设计 token（颜色、级数色轮、间距、字体）
+- [x] Vite + React + TS 脚手架，ESLint / Vitest
+- [ ] Prettier
+- [x] 安装 Tone.js、tonal、Zustand
+- [x] `audio/engine.ts`：`ensureAudioStarted()`、主输出链（音量 + limiter）
+- [x] 设计 token（颜色、级数色轮）；浅色/深色跟随系统
 
 ## M1 钢琴 + 音阶实验室（最小可玩版本）
-- [ ] 屏幕钢琴键盘组件（多点触控 + 电脑键盘映射 + 切八度）
-- [ ] 音色：合成钢琴兜底 → Salamander 采样钢琴
-- [ ] 电钢（FM）、电子管风琴（drawbar）音色
-- [ ] `theory/scales`：7 种调式 + 特征音，附单测
-- [ ] 调式转盘 + 平行/相对对比模式
-- [ ] Drone 即兴模式（只亮调内音）
+- [x] 屏幕钢琴键盘组件（多点触控 + 滑奏 + 电脑键盘映射 + 切八度）
+- [x] 音色：合成钢琴兜底 → Salamander 采样钢琴
+- [x] 电钢（FM）、电子管风琴（drawbar，可调拉杆 + 预设）、合成器铺底
+- [x] `theory/modes`：7 种调式 + 特征音 + 相对/平行关系，附单测
+- [x] 调式明暗条 + 平行/相对对比模式
+- [x] Drone 即兴模式 + “只允许按调内音”锁定
+- [x] 每种调式的原创示范旋律
+- [ ] 真机验证：桌面 Chrome、iOS Safari、Android Chrome 发声与延迟
+- [ ] 代码分包（Tone.js 单独 chunk，当前主包约 578 KB / gzip 167 KB）
 
 ## M2 和弦与进行
 - [ ] `theory/chords`、`theory/progressions`（罗马数字 → 和弦音），附单测

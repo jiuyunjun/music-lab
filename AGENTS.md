@@ -11,24 +11,34 @@
 | 层 | 选型 | 说明 |
 | --- | --- | --- |
 | 构建 | Vite | 纯前端 SPA，无后端 |
-| 框架 | React 18 + TypeScript（strict） | |
+| 框架 | React 19 + TypeScript（strict） | |
+| 路由 | react-router（`HashRouter`） | Hash 路由，静态托管无需服务器重写配置 |
 | 音频 | [Tone.js](https://tonejs.github.io/) | 统一的 Transport / 调度 / 合成器 / 采样器 |
-| 乐理 | [tonal](https://github.com/tonaljs/tonal) | 音名、音程、音阶、和弦、罗马数字级数 |
+| 乐理 | [tonal](https://github.com/tonaljs/tonal) **固定 6.4.3** | 音名、音程、音阶、和弦、罗马数字级数。6.5.0 发布包的 `main`/`types` 指向不存在的文件，升级前先验证 |
 | 状态 | Zustand | 全局播放状态、编曲工程 |
 | 样式 | CSS Modules + CSS 变量（设计 token） | 不引入重型 UI 库 |
 | 测试 | Vitest（+ Testing Library） | `src/theory` 必须有单元测试 |
 
 > 如需引入新依赖，先在 PR / 对话中说明理由；音频和乐理相关优先复用 Tone.js 与 tonal，不要手写一套。
 
-## 常用命令（脚手架搭好后生效）
+## 常用命令
 
 ```bash
 npm install
-npm run dev        # 本地开发
-npm run build      # 生产构建
+npm run dev        # 本地开发（http://localhost:5173）
+npm run build      # 类型检查 + 生产构建
 npm run test       # Vitest
 npm run lint       # ESLint + tsc --noEmit
 ```
+
+## 已有的关键模块
+
+- `audio/engine.ts`：`ensureAudioStarted()` / `withAudio(fn)` / `getMasterBus()`，所有乐器都连到主总线
+- `audio/instruments/`：`getInstrument(id)` 懒加载并缓存；`piano`（Salamander 采样，加载前用合成音兜底）、`epiano`（FM + tremolo）、`organ`（9 根拉杆加法合成，振荡器低一个八度以容纳 16' 拉杆）、`pad`（也用作 Drone）
+- `audio/sequencer.ts`：`playPhrase(instrument, NoteEvent[])` 用 `Tone.Part` 在 Transport 上播放，`Tone.Draw` 同步高亮
+- `theory/`：`modes.ts`（调式、特征音、相对/平行关系、根音拼写）、`events.ts`（级数旋律 → `NoteEvent[]`）、`keyboard.ts`（键位、电脑键盘映射）
+- `components/PianoKeyboard`：多点触控 + 滑奏，`markFor` 按级数着色，`lockToScale` 锁定调内音
+- 文案：`content/ui.ts`、`content/modes.ts`
 
 ## 目录结构（约定）
 

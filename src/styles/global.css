@@ -1,0 +1,119 @@
+:root {
+  color-scheme: dark;
+  --bg: #14121c;
+  --bg-raised: #1e1b29;
+  --bg-sunken: #0f0d16;
+  --border: #2e2a3d;
+  --text: #ece8f5;
+  --text-muted: #a39cb8;
+  --accent: #ffb454;
+  --accent-text: #1b1400;
+  --radius: 14px;
+
+  /* Scale-degree colour wheel, shared across every view. */
+  --deg-1: #ff5d6c;
+  --deg-2: #ff9a4d;
+  --deg-3: #ffd23f;
+  --deg-4: #5fd068;
+  --deg-5: #3ccfd4;
+  --deg-6: #5b8cff;
+  --deg-7: #b574ff;
+
+  --key-white: #f6f3ee;
+  --key-white-dim: #a8a4a0;
+  --key-black: #1d1b22;
+  --key-black-dim: #4a4752;
+  --key-border: #c9c3bb;
+  --key-label: #6d6878;
+
+  font-family: system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  line-height: 1.6;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+    --bg: #faf7f2;
+    --bg-raised: #ffffff;
+    --bg-sunken: #f0ebe3;
+    --border: #e2dbd0;
+    --text: #221f2b;
+    --text-muted: #6d6878;
+    --accent: #e8870e;
+    --accent-text: #fff;
+    --key-black: #25222b;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+}
+
+a {
+  color: inherit;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.25;
+  margin: 0 0 0.5em;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg-raised);
+  transition: border-color 120ms, background-color 120ms;
+}
+
+.button:hover {
+  border-color: var(--accent);
+}
+
+.button[aria-pressed='true'],
+.button.primary {
+  background: var(--accent);
+  color: var(--accent-text);
+  border-color: var(--accent);
+}
+
+.card {
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+
+.muted {
+  color: var(--text-muted);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}

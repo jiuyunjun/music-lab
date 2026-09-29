@@ -1,0 +1,99 @@
+.scroller {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  padding-bottom: 4px;
+}
+
+.keyboard {
+  position: relative;
+  height: clamp(150px, 26vw, 220px);
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.white,
+.black {
+  position: absolute;
+  top: 0;
+  box-sizing: border-box;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 60ms, transform 60ms, box-shadow 60ms;
+}
+
+.white {
+  height: 100%;
+  background: var(--key-white);
+  border: 1px solid var(--key-border);
+  border-radius: 0 0 8px 8px;
+  z-index: 1;
+}
+
+.black {
+  height: 62%;
+  background: var(--key-black);
+  border-radius: 0 0 5px 5px;
+  z-index: 2;
+  box-shadow: 0 3px 4px rgb(0 0 0 / 0.4);
+}
+
+/* Scale colouring: a coloured strip at the bottom of the key. */
+.white.inScale {
+  background: linear-gradient(to top, color-mix(in srgb, var(--key-color) 55%, var(--key-white)) 0 26%, var(--key-white) 26%);
+}
+
+.black.inScale {
+  background: linear-gradient(to top, var(--key-color) 0 24%, var(--key-black) 24%);
+}
+
+.white.outOfScale {
+  background: var(--key-white-dim);
+}
+
+.black.outOfScale {
+  background: var(--key-black-dim);
+}
+
+.outOfScale[data-disabled='true'] {
+  cursor: not-allowed;
+}
+
+.characteristic::after {
+  content: '';
+  position: absolute;
+  /* Sit in the part of a white key that black keys never cover. */
+  inset: auto 22% 34px 22%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 3px solid var(--key-color);
+  box-shadow: 0 0 10px var(--key-color);
+}
+
+.active {
+  transform: translateY(2px);
+}
+
+.white.active {
+  background: color-mix(in srgb, var(--key-color, var(--accent)) 75%, white);
+  box-shadow: inset 0 0 18px rgb(255 255 255 / 0.6);
+}
+
+.black.active {
+  background: var(--key-color, var(--accent));
+}
+
+.label {
+  pointer-events: none;
+  margin-bottom: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--key-label);
+}
+
+.black .label {
+  color: #fff;
+}
