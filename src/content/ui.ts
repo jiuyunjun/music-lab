@@ -37,6 +37,7 @@ export const INSTRUMENT_COPY: Record<InstrumentId, { name: string; blurb: string
   organ: { name: '电子管风琴', blurb: 'Hammond 风格。拉杆越往上，对应的泛音越响——试着调出你自己的音色。' },
   pad: { name: '合成器铺底', blurb: '柔和绵长的合成器音色，适合按住和弦慢慢听。' },
   bass: { name: '合成贝斯', blurb: '低沉圆润的贝斯，编曲里的“地基”。往低八度弹效果最好。' },
+  guitar: { name: '吉他', blurb: '拨弦合成的木吉他音色，适合扫弦。' },
 };
 
 export const PLAY_COPY = {

@@ -6,6 +6,7 @@ import { useComputerKeyboard } from '../../components/useComputerKeyboard';
 import { useInstrument } from '../../components/useInstrument';
 import { INSTRUMENT_COPY, PLAY_COPY } from '../../content/ui';
 import { useAppStore } from '../../store';
+import { InstrumentTabs } from './InstrumentTabs';
 import styles from './PlayPage.module.css';
 
 const INSTRUMENT_IDS: InstrumentId[] = ['piano', 'epiano', 'organ', 'pad', 'bass'];
@@ -20,6 +21,7 @@ export function PlayPage() {
 
   return (
     <>
+      <InstrumentTabs />
       <h1>{PLAY_COPY.title}</h1>
 
       <section className={`card ${styles.controls}`}>

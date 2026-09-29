@@ -43,6 +43,11 @@ npm run lint       # ESLint + tsc --noEmit
   - `chords.ts`：`romanToChord`（按主音半音距离解析，`bVII`/`V7`/`vii°` 等）、`diatonicChords`、`harmonicFunctions`、`voiceChord`（声部连接）、`bassNote`
   - `patterns.ts`：`accompany(chords, {pattern})` → 带 `track`（melody/chords/bass）与 `step` 的事件
   - `keyboard.ts`：键位、电脑键盘映射
+  - `guitar.ts`：`guitarShape(chord)`（开放和弦表 → E/A 型横按）、`noteAt(string, fret)`
+  - `drums.ts`：16 步鼓型（`X` 重音 / `x` 普通 / `.` 休止）、`hitsAt`、`drumEvents`
+- `audio/drums.ts`：`getDrumKit().hit(piece, time, velocity)`，纯合成鼓组
+- `audio/sequencer.ts` 的 `startStepLoop` 每个十六分音符回调一次并实时读取鼓型；`NoteEvent.offset`（秒）用于扫弦的弦间延迟
+- 乐器房路由：`/play`（键盘）、`/play/guitar`、`/play/drums`
 - 调音量平衡时用真实浏览器测主总线峰值，目标：旋律比伴奏高约 6–8 dB
 - `components/PianoKeyboard`：多点触控 + 滑奏，`markFor` 按级数着色，`lockToScale` 锁定调内音
 - 文案：`content/ui.ts`、`content/modes.ts`

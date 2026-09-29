@@ -98,6 +98,7 @@ export const PATTERN_COPY: Record<PatternId, { name: string; help: string }> = {
   broken: { name: '分解和弦', help: '一个一个音往上再往下，流动感强。' },
   arpeggio: { name: '琶音', help: '一路往上爬到高八度，像竖琴。' },
   alberti: { name: 'Alberti 低音', help: '低-高-中-高，古典钢琴（莫扎特）最爱的伴奏型。' },
+  strum: { name: '吉他扫弦', help: '用吉他按法“下 · 下上 · 上下上”地扫，配吉他音色最像。' },
 };
 
 export const FUNCTION_COPY: Record<HarmonicFunction, { name: string; help: string }> = {

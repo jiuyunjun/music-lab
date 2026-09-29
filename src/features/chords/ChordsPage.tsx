@@ -32,7 +32,7 @@ import { PATTERN_IDS, accompany, progressionLength, type PatternId } from '../..
 import styles from './ChordsPage.module.css';
 
 const CHROMAS = Array.from({ length: 12 }, (_, i) => i);
-const CHORD_INSTRUMENTS: InstrumentId[] = ['piano', 'epiano', 'organ', 'pad'];
+const CHORD_INSTRUMENTS: InstrumentId[] = ['piano', 'epiano', 'organ', 'pad', 'guitar'];
 
 interface Playback {
   preset: ProgressionPreset;
