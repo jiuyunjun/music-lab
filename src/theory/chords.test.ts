@@ -6,6 +6,7 @@ import {
   diatonicChords,
   displayRoman,
   harmonicFunctions,
+  reharmonize,
   romanToChord,
   voiceChord,
 } from './chords';
@@ -72,6 +73,18 @@ describe('diatonicChords', () => {
     for (const c of diatonicChords('F', 'dorian')) {
       expect(romanToChord('F', c.roman).symbol).toBe(c.symbol);
     }
+  });
+});
+
+describe('reharmonize', () => {
+  it('moves each chord to the same step of the new mode', () => {
+    expect(reharmonize(['I', 'V', 'vi', 'IV'], 'dorian')).toEqual(['i', 'v', 'vi°', 'IV']);
+    expect(reharmonize(['I', 'V', 'vi', 'IV'], 'aeolian')).toEqual(['i', 'v', 'bVI', 'iv']);
+    expect(reharmonize(['i', 'bVII', 'bVI', 'V'], 'ionian')).toEqual(['I', 'vii°', 'vi', 'V']);
+  });
+
+  it('keeps sevenths', () => {
+    expect(reharmonize(['ii7', 'V7', 'Imaj7'], 'dorian')).toEqual(['ii7', 'v7', 'i7']);
   });
 });
 

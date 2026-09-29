@@ -3,7 +3,8 @@ import { bassNote, voiceChord, type ChordInfo } from './chords';
 import { sixteenths, type NoteEvent } from './events';
 import { guitarShape } from './guitar';
 
-export type TrackId = 'melody' | 'chords' | 'bass';
+/** melody / chords / bass / drums, plus "counter" for a second melodic voice (canon). */
+export type TrackId = 'melody' | 'counter' | 'chords' | 'bass' | 'drums';
 
 export interface ArrangedEvent extends NoteEvent {
   track: TrackId;

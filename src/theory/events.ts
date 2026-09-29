@@ -22,6 +22,17 @@ export function sixteenths(n: number): string {
   return `0:0:${n}`;
 }
 
+/** Inverse of sixteenths(): "0:0:12" -> 12 (also accepts full "bars:beats:sixteenths"). */
+export function parseSixteenths(time: string): number {
+  const [bars = 0, beats = 0, six = 0] = time.split(':').map(Number);
+  return bars * 16 + beats * 4 + six;
+}
+
+/** Move an event later by `by` sixteenths. */
+export function shiftEvent<E extends NoteEvent>(event: E, by: number): E {
+  return { ...event, time: sixteenths(parseSixteenths(event.time) + by) };
+}
+
 /** Note for a scale degree above `tonic` (a note with octave, e.g. "D4"). */
 export function degreeToNote(tonic: string, mode: ModeId, degree: Degree, octaveShift = 0): string {
   const interval = modeIntervals(mode)[degree - 1];

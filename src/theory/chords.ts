@@ -109,6 +109,22 @@ export function diatonicChords(tonic: string, mode: ModeId, sevenths = false): C
   });
 }
 
+/**
+ * Mode substitution: keep each chord's scale step, but take the chord that
+ * lives on that step in `mode`. I–V–vi–IV in dorian -> i–v–vi°–IV.
+ * Sevenths stay sevenths.
+ */
+export function reharmonize(progression: string[], mode: ModeId): string[] {
+  const triads = diatonicChords('C', mode);
+  const sevenths = diatonicChords('C', mode, true);
+  return progression.map((roman) => {
+    const parsed = RomanNumeral.get(roman);
+    if (parsed.empty) return roman;
+    const table = parsed.chordType.includes('7') ? sevenths : triads;
+    return table[parsed.step]?.roman ?? roman;
+  });
+}
+
 const FUNCTIONS: Partial<Record<ModeId, HarmonicFunction[]>> = {
   // Same table tonal's Key module uses.
   ionian: ['T', 'SD', 'T', 'SD', 'D', 'T', 'D'],
