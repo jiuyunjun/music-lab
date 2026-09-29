@@ -1,7 +1,7 @@
 export type InstrumentId = 'piano' | 'epiano' | 'organ' | 'pad' | 'bass' | 'guitar';
 
 export interface Instrument {
-  readonly id: InstrumentId;
+  readonly id: InstrumentId | 'drums';
   /** True once samples (if any) are loaded. Instruments still sound before that via a fallback synth. */
   isLoaded(): boolean;
   /** Resolves when samples are loaded. */

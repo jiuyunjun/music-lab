@@ -1,6 +1,7 @@
 import * as Tone from 'tone';
 import type { DrumPiece } from '../theory/drums';
 import { getMasterBus } from './engine';
+import type { Instrument } from './instruments';
 
 export interface DrumKit {
   hit(piece: DrumPiece, time?: number, velocity?: number): void;
@@ -109,4 +110,23 @@ let kit: DrumKit | null = null;
 export function getDrumKit(): DrumKit {
   kit ??= createKit();
   return kit;
+}
+
+/**
+ * The kit behind the common Instrument interface, where the "note" is the
+ * drum piece name. Lets drums ride in the same event stream as everything else.
+ */
+export function drumsAsInstrument(): Instrument {
+  const drums = getDrumKit();
+  const play = (note: string, time?: number, velocity?: number) => drums.hit(note as DrumPiece, time, velocity);
+  return {
+    id: 'drums',
+    isLoaded: () => true,
+    loaded: Promise.resolve(),
+    noteOn: (note, velocity, time) => play(note, time, velocity),
+    noteOff: () => {},
+    play: (note, _duration, time, velocity) => play(note, time, velocity),
+    releaseAll: () => {},
+    dispose: () => {},
+  };
 }

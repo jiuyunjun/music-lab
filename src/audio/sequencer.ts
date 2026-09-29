@@ -15,6 +15,10 @@ export interface PlayOptions<E extends NoteEvent> {
   /** Called on the animation frame matching each note, for visual highlights. */
   onNote?: (event: E) => void;
   onEnd?: () => void;
+  /** Per-event volume multiplier read at play time (mute = 0), so mixer changes apply live. */
+  gainFor?: (event: E) => number;
+  swing?: number;
+  swingSubdivision?: '8n' | '16n';
 }
 
 function startTransport(bpm: number, swing = 0, swingSubdivision: '8n' | '16n' = '16n') {
@@ -43,7 +47,8 @@ export async function playEvents<E extends NoteEvent>(
 
   const part = new Tone.Part<NoteEvent>((time, value) => {
     const event = value as E;
-    instrumentFor(event).play(event.note, event.duration, time + (event.offset ?? 0), event.velocity);
+    const gain = options.gainFor ? options.gainFor(event) : 1;
+    if (gain > 0) instrumentFor(event).play(event.note, event.duration, time + (event.offset ?? 0), event.velocity * gain);
     if (options.onNote) Tone.getDraw().schedule(() => options.onNote?.(event), time);
   }, events);
 
@@ -70,7 +75,7 @@ export async function playEvents<E extends NoteEvent>(
     part.dispose();
   };
 
-  startTransport(options.bpm ?? 100);
+  startTransport(options.bpm ?? 100, options.swing ?? 0, options.swingSubdivision);
 }
 
 /** Play a single-instrument phrase once. */
