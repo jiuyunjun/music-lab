@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { ensureAudioStarted, isAudioRunning, onAudioStarted, setMasterVolume } from '../../audio/engine';
 import { APP_COPY } from '../../content/ui';
 import { useAppStore } from '../../store';
+import { ErrorBoundary } from './ErrorBoundary';
 import styles from './Layout.module.css';
 
 const NAV = [
@@ -17,6 +18,7 @@ export function Layout() {
   const volumeDb = useAppStore((s) => s.volumeDb);
   const setVolumeDb = useAppStore((s) => s.setVolumeDb);
   const [audioOn, setAudioOn] = useState(isAudioRunning);
+  const location = useLocation();
 
   useEffect(() => onAudioStarted(() => setAudioOn(true)), []);
 
@@ -69,7 +71,9 @@ export function Layout() {
       {!audioOn && <div className={styles.gate}>{APP_COPY.audioGate}</div>}
 
       <main className={styles.main}>
-        <Outlet />
+        <ErrorBoundary resetKey={location.pathname}>
+          <Outlet />
+        </ErrorBoundary>
       </main>
 
       <footer className={styles.footer}>{APP_COPY.footer}</footer>

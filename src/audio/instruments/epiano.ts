@@ -5,7 +5,7 @@ import type { Instrument } from './types';
 /** Rhodes-style electric piano: a bell-ish FM tone through a gentle stereo tremolo. */
 export function createEPiano(): Instrument {
   const tremolo = new Tone.Tremolo({ frequency: 4.5, depth: 0.35, spread: 180 }).start();
-  const output = new Tone.Volume(-4);
+  const output = new Tone.Volume(3);
   tremolo.chain(output, getMasterBus());
 
   const synth = new Tone.PolySynth(Tone.FMSynth, {

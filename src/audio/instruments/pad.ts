@@ -6,12 +6,13 @@ import type { Instrument } from './types';
 export function createPad(): Instrument {
   const filter = new Tone.Filter(1400, 'lowpass');
   const reverb = new Tone.Reverb({ decay: 4, wet: 0.35 });
-  const output = new Tone.Volume(-16);
+  const output = new Tone.Volume(-7);
   filter.chain(reverb, output, getMasterBus());
 
+  // A short attack so a quick tap is still clearly audible; the long release keeps it "pad"-like.
   const synth = new Tone.PolySynth(Tone.Synth, {
     oscillator: { type: 'fatsawtooth', count: 3, spread: 24 },
-    envelope: { attack: 0.35, decay: 0.3, sustain: 0.8, release: 1.6 },
+    envelope: { attack: 0.06, decay: 0.4, sustain: 0.8, release: 1.6 },
   }).connect(filter);
   synth.maxPolyphony = 16;
 

@@ -14,7 +14,10 @@ export const APP_COPY = {
   audioGate: '点一下任意位置，开启声音 🔈',
   comingSoon: '即将上线',
   comingSoonBody: '这个模块正在制作中，先去乐器房或音阶实验室玩玩吧。',
-  footer: '钢琴采样：Salamander Grand Piano（Alexander Holm，CC-BY 3.0）',
+  errorTitle: '哎呀，这里出了点问题 😵',
+  errorBody: '这个模块遇到了错误，其他页面不受影响。可以点“重试”，或者换个页面再回来。',
+  errorRetry: '重试',
+  footer:'钢琴采样：Salamander Grand Piano（Alexander Holm，CC-BY 3.0）',
 };
 
 export const HOME_COPY = {

@@ -65,7 +65,9 @@ export function createOrgan(initial = parseDrawbars('888000000')): OrganInstrume
     noteOff: (note, time) => synth.triggerRelease(sub(note), time),
     play: (note, duration, time, velocity = 0.8) => synth.triggerAttackRelease(sub(note), duration, time, velocity),
     releaseAll: () => synth.releaseAll(),
-    setDrawbars: (setting) => synth.set({ oscillator: { type: 'custom', partials: drawbarPartials(setting) } }),
+    setDrawbars: (setting) => {
+      synth.set({ oscillator: { type: 'custom', partials: drawbarPartials(setting) } });
+    },
     dispose: () => {
       synth.dispose();
       vibrato.dispose();

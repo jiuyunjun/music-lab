@@ -114,7 +114,7 @@ export function ScaleLabPage() {
     if (!drone) return;
     const pad = getInstrument('pad');
     const low = [`${root}2`, `${root}3`];
-    withAudio(() => low.forEach((n) => pad.noteOn(n, 0.6)));
+    withAudio(() => low.forEach((n) => pad.noteOn(n, 0.3)));
     return () => low.forEach((n) => pad.noteOff(n));
   }, [drone, root]);
 

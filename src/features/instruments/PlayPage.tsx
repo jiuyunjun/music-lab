@@ -72,7 +72,9 @@ export function PlayPage() {
 function DrawbarPanel() {
   const [setting, setSetting] = useState(() => parseDrawbars(PLAY_COPY.organPresets[0]!.value));
 
-  useEffect(() => getInstrument('organ').setDrawbars(setting), [setting]);
+  useEffect(() => {
+    getInstrument('organ').setDrawbars(setting);
+  }, [setting]);
 
   return (
     <section className={`card ${styles.drawbars}`}>
