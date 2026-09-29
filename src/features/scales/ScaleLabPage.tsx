@@ -2,13 +2,12 @@ import { useEffect, useState, type CSSProperties } from 'react';
 import { Note } from 'tonal';
 import { withAudio } from '../../audio/engine';
 import { getInstrument } from '../../audio/instruments';
-import { playPhrase, stopPhrase } from '../../audio/sequencer';
+import { playEvents, stopPhrase } from '../../audio/sequencer';
 import { PianoKeyboard, type KeyMark } from '../../components/PianoKeyboard';
 import { useComputerKeyboard } from '../../components/useComputerKeyboard';
 import { useInstrument } from '../../components/useInstrument';
 import { MODE_COPY, SCALE_LAB_COPY as COPY } from '../../content/modes';
 import { useAppStore } from '../../store';
-import { melodyToEvents, runToEvents } from '../../theory/events';
 import { keyId } from '../../theory/keyboard';
 import {
   MODES,
@@ -16,12 +15,13 @@ import {
   characteristicNote,
   degreeOf,
   modeNotes,
-  modeNotesInRange,
   parentMajor,
   relativeRoot,
   simplestRoot,
   type ModeId,
 } from '../../theory/modes';
+import type { ArrangedEvent } from '../../theory/patterns';
+import { modeDemoEvents, scaleRunEvents, vampChords } from './demoArrangement';
 import styles from './ScaleLabPage.module.css';
 
 type Compare = 'parallel' | 'relative';
@@ -46,6 +46,7 @@ export function ScaleLabPage() {
   const [lock, setLock] = useState(false);
   const [lit, setLit] = useState<ReadonlySet<string>>(new Set());
   const [playing, setPlaying] = useState(false);
+  const [backing, setBacking] = useState(true);
 
   const root = rootFor(rootChroma, mode);
   const notes = modeNotes(root, mode);
@@ -73,11 +74,12 @@ export function ScaleLabPage() {
     };
   };
 
-  const play = (events: ReturnType<typeof runToEvents>, bpm: number) => {
+  const play = (events: ArrangedEvent[], bpm: number) => {
     setPlaying(true);
-    void playPhrase(instrument, events, {
+    const band = { melody: instrument, chords: getInstrument('pad'), bass: getInstrument('bass') };
+    void playEvents(events, (e) => band[e.track], {
       bpm,
-      onNote: (e) => setLit(new Set([keyId(e.note)])),
+      onNote: (e) => e.track === 'melody' && setLit(new Set([keyId(e.note)])),
       onEnd: () => {
         setLit(new Set());
         setPlaying(false);
@@ -85,12 +87,9 @@ export function ScaleLabPage() {
     });
   };
 
-  const playScale = (r = root, m = mode) => {
-    const up = modeNotesInRange(r, m, `${r}4`, `${r}5`);
-    play(runToEvents([...up, ...up.slice(0, -1).reverse()]), 120);
-  };
+  const playScale = (r = root, m = mode) => play(scaleRunEvents(r, m, backing), 110);
 
-  const playDemo = (r = root, m = mode) => play(melodyToEvents(`${r}4`, m, MODE_COPY[m].demo), 96);
+  const playDemo = (r = root, m = mode) => play(modeDemoEvents(r, m, backing), 92);
 
   const stop = () => {
     stopPhrase();
@@ -216,22 +215,31 @@ export function ScaleLabPage() {
           <dd>{copy.colour}</dd>
           <dt>{COPY.heardIn}</dt>
           <dd>{copy.heardIn}</dd>
+          <dt>{COPY.vamp}</dt>
+          <dd>
+            <strong>{vampChords(root, mode).map((c) => c.symbol).join(' → ')}</strong>
+            <span className="muted"> {copy.vampNote}</span>
+          </dd>
         </dl>
 
         <div className="row">
-          <button className="button primary" onClick={() => playScale()}>
-            {COPY.playScale}
-          </button>
           <button className="button primary" onClick={() => playDemo()}>
             {COPY.playDemo}
+          </button>
+          <button className="button primary" onClick={() => playScale()}>
+            {COPY.playScale}
           </button>
           {playing && (
             <button className="button" onClick={stop}>
               {COPY.stop}
             </button>
           )}
+          <label className={styles.lock}>
+            <input type="checkbox" checked={backing} onChange={(e) => setBacking(e.target.checked)} />
+            {COPY.backing}
+          </label>
         </div>
-        <p className={styles.help}>{COPY.demoNote}</p>
+        <p className={styles.help}>{backing ? COPY.demoNote : COPY.backingHelp}</p>
       </section>
 
       <section className={`card ${styles.jam}`}>
