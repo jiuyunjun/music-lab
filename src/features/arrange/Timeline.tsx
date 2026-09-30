@@ -40,7 +40,8 @@ export function Timeline({ song, playhead, chordLength, audible }: Props) {
   };
 
   const height = LANES.length * (LANE_HEIGHT + LANE_GAP);
-  const cycles = Math.round(song.length / song.cycleLength);
+  // A closing bar (canon ending) makes the last band shorter than a full cycle.
+  const cycles = Math.ceil(song.length / song.cycleLength);
 
   return (
     <div className={styles.wrap}>
@@ -63,7 +64,7 @@ export function Timeline({ song, playhead, chordLength, audible }: Props) {
             key={c}
             x={c * song.cycleLength}
             y={0}
-            width={song.cycleLength}
+            width={Math.min(song.cycleLength, song.length - c * song.cycleLength)}
             height={height}
             className={c % 2 ? styles.cycleOdd : styles.cycleEven}
           />

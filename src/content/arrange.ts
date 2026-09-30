@@ -16,7 +16,7 @@ export const ARRANGE_TEMPLATES: ArrangeTemplate[] = [
   {
     id: 'canon-piano',
     name: '卡农风钢琴',
-    blurb: 'D 大调卡农进行：旋律一遍比一遍密（二分 → 四分 → 八分 → 十六分），前面的旋律再依次追进来，最多三个声部。',
+    blurb: 'D 大调卡农，8 遍一气呵成：旋律越来越密，第 6 遍冲上高潮（升高八度、全体加倍），再慢慢回落，停在主和弦上。',
     project: {
       ...base,
       keyChroma: 2,
@@ -24,7 +24,7 @@ export const ARRANGE_TEMPLATES: ArrangeTemplate[] = [
       bpm: 66,
       progression: ['I', 'V', 'vi', 'iii', 'IV', 'I', 'IV', 'V'],
       beatsPerChord: 2,
-      cycles: 4,
+      cycles: 8,
       drums: { on: false, preset: 'pop' },
       bass: { on: true, style: 'root' },
       // Held chords underneath, like Pachelbel's continuo: they support the voices without crowding their register.
@@ -155,7 +155,7 @@ export const MELODY_STYLE_COPY: Record<MelodyStyle, { name: string; help: string
   generated: { name: '自动旋律', help: '强拍落在和弦音上、其他音按音阶一步步走，每小节节奏重复。每一遍旋律相同，好记。' },
   canon: {
     name: '卡农',
-    help: '像帕赫贝尔的卡农：每一遍的旋律都比上一遍更密（二分 → 四分 → 八分 → 十六分音符），前两遍的旋律会依次“追”进来。每一拍都落在和弦音上，所以几个声部叠在一起也和谐。',
+    help: '像帕赫贝尔的卡农：每一遍的旋律都比上一遍更密（二分 → 四分 → 八分 → 十六分音符），前两遍的旋律会依次“追”进来。每一拍都落在和弦音上，所以几个声部叠在一起也和谐。重复 6 遍以上时会自动安排高潮（分解和弦 → 升高八度、全体加倍、最响），然后回落，最后停在主和弦上。',
   },
 };
 
@@ -201,6 +201,7 @@ export const ARRANGE_COPY = {
   play: '▶ 播放整首',
   stop: '■ 停止',
   position: (cycle: number, cycles: number) => `第 ${cycle} / ${cycles} 遍`,
+  ending: '尾声',
   share: '🔗 复制分享链接',
   copied: '已复制！发给朋友，打开就是这首歌。',
   copyFailed: '复制失败，请手动复制地址栏里的链接。',

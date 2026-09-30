@@ -6,6 +6,8 @@ import { MODE_IDS, simplestRoot, type ModeId } from '../../theory/modes';
 import { PATTERN_IDS, STRUM_PATTERNS, type PatternId } from '../../theory/patterns';
 import type { MelodyStyle, SongSpec } from '../../theory/song';
 
+export const MAX_CYCLES = 8;
+
 export const LANES = ['drums', 'bass', 'harmony', 'melody'] as const;
 export type Lane = (typeof LANES)[number];
 
@@ -127,7 +129,7 @@ export function sanitizeProject(input: unknown): Project {
     bpm: Math.round(num(p.bpm, 40, 200, d.bpm)),
     progression: validProgression(p.progression) ?? d.progression,
     beatsPerChord: oneOf(p.beatsPerChord, [2, 4] as const, d.beatsPerChord),
-    cycles: Math.round(num(p.cycles, 1, 6, d.cycles)),
+    cycles: Math.round(num(p.cycles, 1, MAX_CYCLES, d.cycles)),
     drums: {
       on: bool(drums.on, d.drums.on),
       preset: oneOf(drums.preset, DRUM_PRESETS.map((x) => x.id), d.drums.preset),

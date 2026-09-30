@@ -131,6 +131,40 @@ describe('buildSong', () => {
     expect(song.events.some((e) => e.track === 'counter' && e.cycle === 0)).toBe(false);
   });
 
+  describe('8-pass canon', () => {
+    const canon = buildSong({
+      ...spec,
+      progression: ['I', 'V', 'vi', 'iii', 'IV', 'I', 'IV', 'V'],
+      beatsPerChord: 2,
+      cycles: 8,
+      drums: { ...spec.drums, on: false },
+      melody: { ...spec.melody, style: 'canon' },
+    });
+    const inCycle = (c: number, track: string) => canon.events.filter((e) => e.cycle === c && e.track === track);
+    // Peak velocity of the lead line (averages would be skewed by the softer octave doubling).
+    const peakVelocity = (c: number) => Math.max(...inCycle(c, 'melody').map((e) => e.velocity));
+
+    it('doubles melody and bass at the climax (pass 6)', () => {
+      expect(inCycle(5, 'bass')).toHaveLength(2 * inCycle(4, 'bass').length);
+      expect(inCycle(5, 'melody')).toHaveLength(2 * 64);
+    });
+
+    it('builds to the climax and fades after it', () => {
+      const arc = [0, 1, 2, 3, 4, 5, 6, 7].map(peakVelocity);
+      expect(arc.indexOf(Math.max(...arc))).toBe(5);
+      expect(arc[7]).toBeLessThan(arc[5]!);
+    });
+
+    it('ends on a held home chord after the last pass', () => {
+      expect(canon.cycleLength).toBe(64); // 8 chords x 2 beats x 4 sixteenths
+      expect(canon.length).toBe(8 * 64 + 16);
+      const end = canon.events.filter((e) => e.step === -1);
+      expect(new Set(end.map((e) => e.time))).toEqual(new Set(['0:0:512']));
+      expect(end.find((e) => e.track === 'melody')?.note).toMatch(/^C\d$/); // tonic of C major
+      expect(end.filter((e) => e.track === 'chords').map((e) => Note.chroma(e.note)).sort()).toEqual([0, 4, 7]);
+    });
+  });
+
   it('canon gets busier each pass and stacks up to three voices', () => {
     const song = buildSong({ ...spec, cycles: 4, melody: { ...spec.melody, style: 'canon' } });
     const count = (track: string, c: number) => song.events.filter((e) => e.track === track && e.cycle === c).length;

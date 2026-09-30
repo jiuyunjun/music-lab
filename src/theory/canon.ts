@@ -4,18 +4,65 @@ import { sixteenths, type NoteEvent } from './events';
 import { modeNotesInRange, type ModeId } from './modes';
 import { createRng } from './random';
 
-/** Note length per variation, in sixteenths: half, quarter, eighth, sixteenth notes. */
-export const CANON_NOTE_LENGTHS = [8, 4, 2, 1] as const;
+/**
+ * Note length per variation, in sixteenths:
+ * 0 half notes, 1 quarters, 2 eighths, 3 sixteenth scale runs,
+ * 4 sixteenth broken chords, 5 climax (sixteenth runs an octave higher).
+ */
+export const CANON_NOTE_LENGTHS = [8, 4, 2, 1, 1, 1] as const;
+export const CANON_MAX_LEVEL = CANON_NOTE_LENGTHS.length - 1;
+const BROKEN_CHORD_LEVEL = 4;
+
+/** Default register, and the raised one for the climax variation. */
+const REGISTER = { low: 'D4', high: 'D6' };
+const CLIMAX_REGISTER = { low: 'A4', high: 'A6' };
 
 export interface CanonOptions {
   tonic: string;
   mode: ModeId;
   beatsPerChord?: number;
   seed: number;
-  /** Variation number: 0 = half notes, 1 = quarters, 2 = eighths, 3+ = sixteenths. */
+  /** Variation number, see CANON_NOTE_LENGTHS. */
   level: number;
   low?: string;
   high?: string;
+}
+
+/** How one pass of the canon is played. */
+export interface CanonPass {
+  level: number;
+  /** How many earlier lines come back as extra voices (0-2). */
+  voices: number;
+  /** Velocity multiplier for everything pitched in this pass: the dynamic arc. */
+  dynamic: number;
+  /** The peak: melody and bass doubled at the octave. */
+  climax: boolean;
+}
+
+/**
+ * The shape of the whole piece. Short canons just get busier. From 6 passes
+ * on, the piece rises to a climax (broken chords, then runs an octave up,
+ * loudest, everything doubled) and then winds down over the last two passes.
+ */
+export function canonPlan(cycles: number): CanonPass[] {
+  if (cycles < 6) {
+    return Array.from({ length: cycles }, (_, i) => ({
+      level: Math.min(i, 3),
+      voices: Math.min(i, 2),
+      dynamic: 0.75 + (0.25 * i) / Math.max(1, cycles - 1),
+      climax: false,
+    }));
+  }
+  const rise = cycles - 2;
+  const rising = Array.from({ length: rise }, (_, i) => {
+    const level = Math.round((i * CANON_MAX_LEVEL) / (rise - 1));
+    return { level, voices: Math.min(i, 2), dynamic: 0.68 + (0.32 * i) / (rise - 1), climax: level === CANON_MAX_LEVEL };
+  });
+  const windDown: CanonPass[] = [
+    { level: 2, voices: 1, dynamic: 0.72, climax: false },
+    { level: 0, voices: 1, dynamic: 0.6, climax: false },
+  ];
+  return [...rising, ...windDown];
 }
 
 const midi = (note: string) => Note.midi(note) ?? 0;
@@ -33,9 +80,13 @@ const midi = (note: string) => Note.midi(note) ?? 0;
  * - each variation is twice as busy as the one before.
  */
 export function canonLine(chords: ChordInfo[], options: CanonOptions): NoteEvent[] {
-  const { tonic, mode, beatsPerChord = 2, seed, level, low = 'D4', high = 'D6' } = options;
+  const { tonic, mode, beatsPerChord = 2, seed } = options;
+  const level = Math.max(0, Math.min(options.level, CANON_MAX_LEVEL));
+  const register = level === CANON_MAX_LEVEL ? CLIMAX_REGISTER : REGISTER;
+  const low = options.low ?? register.low;
+  const high = options.high ?? register.high;
   const rng = createRng(seed);
-  const noteLength = CANON_NOTE_LENGTHS[Math.min(level, CANON_NOTE_LENGTHS.length - 1)]!;
+  const noteLength = CANON_NOTE_LENGTHS[level]!;
   const spacing = Math.max(noteLength, 4); // anchors on every beat, or every half note
   const chordLength = beatsPerChord * 4;
   const total = chords.length * chordLength;
@@ -80,7 +131,14 @@ export function canonLine(chords: ChordInfo[], options: CanonOptions): NoteEvent
     const dir = Math.sign(to - from) || 1;
 
     let figure: string[];
-    if (count === 1) figure = [anchor];
+    if (level === BROKEN_CHORD_LEVEL) {
+      // Leap through the chord (anchor, next, next, back) - all chord tones, full of energy.
+      const tones = chordTonesAt(start);
+      const i = Math.max(0, tones.indexOf(anchor));
+      const up = midi(anchor) < (top + bottom) / 2 ? 1 : -1;
+      const tone = (k: number) => tones[Math.max(0, Math.min(tones.length - 1, i + k * up))]!;
+      figure = [tone(0), tone(1), tone(2), tone(1)];
+    } else if (count === 1) figure = [anchor];
     else if (count === 2) figure = distance >= 2 ? [anchor, at(from + dir)] : [anchor, at(from - dir)];
     else if (distance >= count) figure = Array.from({ length: count }, (_, i) => at(from + dir * i));
     else figure = [anchor, at(from - dir), anchor, at(from + dir)]; // turn: lower/upper neighbour, then step on

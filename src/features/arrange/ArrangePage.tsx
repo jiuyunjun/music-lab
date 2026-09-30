@@ -21,10 +21,11 @@ import { diatonicChords, displayRoman, reharmonize, romanToChord } from '../../t
 import { sixteenths } from '../../theory/events';
 import { MODE_IDS, simplestRoot, type ModeId } from '../../theory/modes';
 import { PATTERN_IDS, STRUM_PATTERNS } from '../../theory/patterns';
-import { buildSong, type SongEvent } from '../../theory/song';
+import { ENDING_LENGTH, buildSong, type SongEvent } from '../../theory/song';
 import {
   DEFAULT_PROJECT,
   HARMONY_INSTRUMENTS,
+  MAX_CYCLES,
   MELODY_INSTRUMENTS,
   decodeProject,
   drumPreset,
@@ -224,7 +225,11 @@ export function ArrangePage() {
             </span>
           ))}
         </div>
-        {position && <span className="muted">{COPY.position(position.cycle + 1, project.cycles)}</span>}
+        {position && (
+          <span className="muted">
+            {position.cycle >= project.cycles ? COPY.ending : COPY.position(position.cycle + 1, project.cycles)}
+          </span>
+        )}
         <span className={styles.spacer} />
         <button className="button" onClick={share}>
           {COPY.share}
@@ -238,8 +243,10 @@ export function ArrangePage() {
         <h2>{COPY.timeline}</h2>
         <Timeline
           song={song}
-          playhead={position ? position.cycle * song.cycleLength + position.step * chordLength : null}
-          chordLength={chordLength}
+          playhead={
+            position ? position.cycle * song.cycleLength + Math.max(0, position.step) * chordLength : null
+          }
+          chordLength={position && position.step < 0 ? ENDING_LENGTH : chordLength}
           audible={audible}
         />
         <p className={styles.help}>{COPY.timelineHelp}</p>
@@ -285,7 +292,7 @@ export function ArrangePage() {
           <label>
             {COPY.cycles}
             <select value={project.cycles} onChange={(e) => update({ cycles: Number(e.target.value) })}>
-              {[1, 2, 3, 4, 5, 6].map((n) => (
+              {Array.from({ length: MAX_CYCLES }, (_, i) => i + 1).map((n) => (
                 <option key={n} value={n}>
                   {COPY.times(n)}
                 </option>
