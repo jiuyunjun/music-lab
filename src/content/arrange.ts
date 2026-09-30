@@ -16,21 +16,22 @@ export const ARRANGE_TEMPLATES: ArrangeTemplate[] = [
   {
     id: 'canon-piano',
     name: '卡农风钢琴',
-    blurb: 'D 大调卡农进行 + 琶音钢琴，旋律晚一轮再进来一次——这就是“卡农”。',
+    blurb: 'D 大调卡农进行：旋律一遍比一遍密（二分 → 四分 → 八分 → 十六分），前面的旋律再依次追进来，最多三个声部。',
     project: {
       ...base,
       keyChroma: 2,
       mode: 'ionian',
-      bpm: 72,
+      bpm: 66,
       progression: ['I', 'V', 'vi', 'iii', 'IV', 'I', 'IV', 'V'],
       beatsPerChord: 2,
       cycles: 4,
       drums: { on: false, preset: 'pop' },
       bass: { on: true, style: 'root' },
-      harmony: { on: true, instrument: 'piano', pattern: 'arpeggio', strum: 'folk' },
+      // Held chords underneath, like Pachelbel's continuo: they support the voices without crowding their register.
+      harmony: { on: true, instrument: 'pad', pattern: 'pad', strum: 'folk' },
       melody: { on: true, instrument: 'piano', style: 'canon', seed: 11, double: false },
-      tricks: { build: true, fill: false, lift: false },
-      mixer: mixer(),
+      tricks: { build: false, fill: false, lift: false },
+      mixer: mixer({ harmony: { volume: 0.55, muted: false } }),
     },
   },
   {
@@ -152,7 +153,10 @@ export const BASS_STYLE_COPY: Record<BassStyle, { name: string; help: string }> 
 
 export const MELODY_STYLE_COPY: Record<MelodyStyle, { name: string; help: string }> = {
   generated: { name: '自动旋律', help: '强拍落在和弦音上、其他音按音阶一步步走，每小节节奏重复。每一遍旋律相同，好记。' },
-  canon: { name: '卡农', help: '每一遍都是新旋律，而上一遍的旋律会作为第二声部“追”进来——自己和自己合唱。' },
+  canon: {
+    name: '卡农',
+    help: '像帕赫贝尔的卡农：每一遍的旋律都比上一遍更密（二分 → 四分 → 八分 → 十六分音符），前两遍的旋律会依次“追”进来。每一拍都落在和弦音上，所以几个声部叠在一起也和谐。',
+  },
 };
 
 export const TRICK_COPY = {

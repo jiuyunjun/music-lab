@@ -1,5 +1,6 @@
 import { Note } from 'tonal';
 import { bassLine, type BassStyle } from './bass';
+import { canonLine } from './canon';
 import { romanToChord } from './chords';
 import { drumEvents, type DrumPattern } from './drums';
 import { parseSixteenths, shiftEvent, sixteenths } from './events';
@@ -82,17 +83,18 @@ export function buildSong(spec: SongSpec): Song {
   const drums: ArrangedEvent[] = drumEvents(spec.drums.pattern, bars)
     .filter((e) => parseSixteenths(e.time) < cycleLength)
     .map((e) => ({ time: e.time, note: e.piece, duration: sixteenths(1), velocity: e.velocity, track: 'drums', step: 0 }));
-  const melodies = Array.from({ length: spec.cycles }, (_, c) =>
-    generateMelody(chords, {
-      tonic: spec.tonic,
-      mode: spec.mode,
-      beatsPerChord: spec.beatsPerChord,
-      // A canon needs a long, changing line; a song wants its tune to repeat.
-      seed: spec.melody.style === 'canon' ? spec.melody.seed + c : spec.melody.seed,
-    }).map((e): ArrangedEvent => ({ ...e, track: 'melody', step: Math.floor(parseSixteenths(e.time) / (spec.beatsPerChord * 4)) })),
-  );
-
   const enters = (layer: Parameters<typeof entryCycle>[0], c: number) => c >= entryCycle(layer, spec.cycles, spec.tricks.build);
+  const melodyEntry = entryCycle('melody', spec.cycles, spec.tricks.build);
+
+  const melodies = Array.from({ length: spec.cycles }, (_, c) => {
+    const common = { tonic: spec.tonic, mode: spec.mode, beatsPerChord: spec.beatsPerChord };
+    // A song wants its tune to repeat; a canon gets busier every pass (half notes -> sixteenths).
+    const line =
+      spec.melody.style === 'canon'
+        ? canonLine(chords, { ...common, seed: spec.melody.seed + c, level: Math.max(0, c - melodyEntry) })
+        : generateMelody(chords, { ...common, seed: spec.melody.seed });
+    return line.map((e): ArrangedEvent => ({ ...e, track: 'melody', step: Math.floor(parseSixteenths(e.time) / (spec.beatsPerChord * 4)) }));
+  });
 
   for (let c = 0; c < spec.cycles; c++) {
     if (spec.harmony.on && enters('chords', c)) events.push(...harmony.map((e) => at(e, c)));
@@ -113,10 +115,14 @@ export function buildSong(spec: SongSpec): Song {
       if (spec.melody.double) {
         events.push(...line.map((e) => at({ ...e, note: Note.transpose(e.note, '-8P'), velocity: e.velocity * 0.55 }, c)));
       }
-      // Canon: the previous pass's line comes back as a second voice.
-      const previous = melodies[c - 1];
-      if (spec.melody.style === 'canon' && previous && enters('melody', c - 1)) {
-        events.push(...previous.map((e) => at({ ...e, track: 'counter', velocity: e.velocity * 0.75 }, c)));
+      // Canon: the lines from the previous two passes come back as second and third voices.
+      if (spec.melody.style === 'canon') {
+        [1, 2].forEach((back) => {
+          const earlier = melodies[c - back];
+          if (!earlier || !enters('melody', c - back)) return;
+          const softer = back === 1 ? 0.72 : 0.55;
+          events.push(...earlier.map((e) => at({ ...e, track: 'counter', velocity: e.velocity * softer }, c)));
+        });
       }
     }
   }

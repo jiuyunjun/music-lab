@@ -130,4 +130,11 @@ describe('buildSong', () => {
     expect(counter1).toEqual(melody0);
     expect(song.events.some((e) => e.track === 'counter' && e.cycle === 0)).toBe(false);
   });
+
+  it('canon gets busier each pass and stacks up to three voices', () => {
+    const song = buildSong({ ...spec, cycles: 4, melody: { ...spec.melody, style: 'canon' } });
+    const count = (track: string, c: number) => song.events.filter((e) => e.track === track && e.cycle === c).length;
+    expect([0, 1, 2, 3].map((c) => count('melody', c))).toEqual([8, 16, 32, 64]); // half notes -> sixteenths
+    expect([0, 1, 2, 3].map((c) => count('counter', c))).toEqual([0, 8, 8 + 16, 16 + 32]);
+  });
 });
