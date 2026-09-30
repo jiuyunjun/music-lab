@@ -7,6 +7,7 @@
 .labels {
   display: flex;
   flex-direction: column;
+  padding-top: 18px; /* line up with the lanes below the pass numbers */
   font-size: 12px;
   font-weight: 600;
 }
@@ -25,6 +26,30 @@
   height: 168px;
   border-radius: 8px;
   overflow: hidden;
+  cursor: pointer;
+}
+
+/* Pass numbers above the columns. */
+.numbers {
+  display: flex;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+
+.numbers span {
+  text-align: center;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.numbers span[data-hover='true'] {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.cycleHover {
+  fill: color-mix(in srgb, var(--accent) 14%, var(--bg-sunken));
 }
 
 .cycleEven {

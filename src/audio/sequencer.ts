@@ -19,15 +19,22 @@ export interface PlayOptions<E extends NoteEvent> {
   gainFor?: (event: E) => number;
   swing?: number;
   swingSubdivision?: '8n' | '16n';
+  /** Start playback from this point (transport time) instead of the beginning. */
+  startAt?: string;
 }
 
-function startTransport(bpm: number, swing = 0, swingSubdivision: '8n' | '16n' = '16n') {
+function startTransport(bpm: number, swing = 0, swingSubdivision: '8n' | '16n' = '16n', startAt: string | number = 0) {
   const transport = Tone.getTransport();
   transport.bpm.value = bpm;
   transport.swing = swing;
   transport.swingSubdivision = swingSubdivision;
-  transport.position = 0;
+  transport.position = startAt;
   transport.start('+0.05');
+}
+
+/** Jump the running transport to another point, e.g. from a click on a timeline. */
+export function seekTo(position: string): void {
+  Tone.getTransport().position = position;
 }
 
 /**
@@ -75,7 +82,7 @@ export async function playEvents<E extends NoteEvent>(
     part.dispose();
   };
 
-  startTransport(options.bpm ?? 100, options.swing ?? 0, options.swingSubdivision);
+  startTransport(options.bpm ?? 100, options.swing ?? 0, options.swingSubdivision, options.startAt);
 }
 
 /** Play a single-instrument phrase once. */

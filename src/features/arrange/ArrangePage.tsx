@@ -2,13 +2,15 @@ import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { drumsAsInstrument } from '../../audio/drums';
 import { getInstrument, type Instrument } from '../../audio/instruments';
-import { playEvents, stopPhrase } from '../../audio/sequencer';
+import { playEvents, seekTo, stopPhrase } from '../../audio/sequencer';
 import {
   ARRANGE_COPY as COPY,
   ARRANGE_TEMPLATES,
   BASS_STYLE_COPY,
   LANE_COPY,
   MELODY_STYLE_COPY,
+  PACHELBEL_EXCERPTS,
+  PACHELBEL_SONG,
   TRICK_COPY,
 } from '../../content/arrange';
 import { PATTERN_COPY, PROGRESSIONS } from '../../content/chords';
@@ -55,6 +57,8 @@ export function ArrangePage() {
   const mixerRef = useRef(project.mixer);
   const soloRef = useRef(solo);
   const positionKey = useRef(-1);
+  /** Where the next (re)start begins, in sixteenths; set by clicking the timeline. */
+  const startAt = useRef(0);
   useEffect(() => {
     mixerRef.current = project.mixer;
     soloRef.current = solo;
@@ -98,6 +102,7 @@ export function ArrangePage() {
       length: sixteenths(song.length),
       swing: project.drums.on ? preset.swing : 0,
       swingSubdivision: preset.swingSubdivision,
+      startAt: sixteenths(startAt.current),
       gainFor: (e) => {
         const lane = laneOf(e.track);
         const mix = mixerRef.current[lane];
@@ -122,8 +127,16 @@ export function ArrangePage() {
 
   useEffect(() => stopPhrase, []);
 
+  const seek = (sixteenth: number) => {
+    positionKey.current = -1;
+    startAt.current = sixteenth;
+    if (playing) seekTo(sixteenths(sixteenth));
+    else setPlaying(true);
+  };
+
   const stop = () => {
     stopPhrase();
+    startAt.current = 0;
     setPlaying(false);
     setPosition(null);
   };
@@ -143,6 +156,19 @@ export function ArrangePage() {
     setProject((p) => ({ ...p, [lane]: { ...p[lane], ...patch } }));
   const setMix = (lane: Lane, patch: Partial<Project['mixer'][Lane]>) =>
     setProject((p) => ({ ...p, mixer: { ...p.mixer, [lane]: { ...p.mixer[lane], ...patch } } }));
+
+  /** Pachelbel's own line only fits his progression: switch to it (keeping the key) and pick an excerpt. */
+  const choosePachelbel = (excerpt: (typeof PACHELBEL_EXCERPTS)[number]) =>
+    setProject((p) => ({
+      ...p,
+      ...PACHELBEL_SONG,
+      keyChroma: p.melody.style === 'quote' ? p.keyChroma : PACHELBEL_SONG.keyChroma,
+      cycles: excerpt.cycles,
+      tricks: { ...p.tricks, build: false },
+      melody: { ...p.melody, on: true, style: 'quote', excerpt: excerpt.start },
+    }));
+  const canonProgression =
+    project.progression.join() === PACHELBEL_SONG.progression.join() && project.beatsPerChord === PACHELBEL_SONG.beatsPerChord;
 
   const chooseMode = (mode: ModeId) =>
     setProject((p) => ({ ...p, mode, progression: reharmonize(p.progression, mode) }));
@@ -248,8 +274,11 @@ export function ArrangePage() {
           }
           chordLength={position && position.step < 0 ? ENDING_LENGTH : chordLength}
           audible={audible}
+          onSeek={seek}
         />
-        <p className={styles.help}>{COPY.timelineHelp}</p>
+        <p className={styles.help}>
+          {COPY.timelineHelp} {COPY.seekHelp}
+        </p>
       </section>
 
       <section className={`card ${styles.section}`}>
@@ -434,19 +463,24 @@ export function ArrangePage() {
             {instrumentSelect(project.melody.instrument, MELODY_INSTRUMENTS, (v) => setLane('melody', { instrument: v }))}
           </div>
           <div className={styles.choices}>
-            {(['generated', 'canon'] as const).map((s) => (
+            {(['generated', 'canon', 'quote'] as const).map((s) => (
               <button
                 key={s}
                 className="button"
                 aria-pressed={project.melody.style === s}
-                onClick={() => setLane('melody', { style: s, on: true })}
+                onClick={() => (s === 'quote' ? choosePachelbel(PACHELBEL_EXCERPTS[1]) : setLane('melody', { style: s, on: true }))}
               >
                 {MELODY_STYLE_COPY[s].name}
               </button>
             ))}
-            <button className="button" onClick={() => setLane('melody', { seed: (project.melody.seed * 7 + 13) % 100000, on: true })}>
-              {COPY.reroll}
-            </button>
+            {project.melody.style !== 'quote' && (
+              <button
+                className="button"
+                onClick={() => setLane('melody', { seed: (project.melody.seed * 7 + 13) % 100000, on: true })}
+              >
+                {COPY.reroll}
+              </button>
+            )}
             <label className={styles.inline} title={COPY.doubleHelp}>
               <input
                 type="checkbox"
@@ -457,6 +491,32 @@ export function ArrangePage() {
             </label>
           </div>
           <p className={styles.help}>{MELODY_STYLE_COPY[project.melody.style].help}</p>
+          {project.melody.style === 'quote' && (
+            <>
+              <div className={styles.label}>{COPY.excerpt}</div>
+              <div className={styles.choices}>
+                {PACHELBEL_EXCERPTS.map((x) => (
+                  <button
+                    key={x.id}
+                    className={styles.small}
+                    title={x.help}
+                    aria-pressed={project.melody.excerpt === x.start && project.cycles === x.cycles}
+                    onClick={() => choosePachelbel(x)}
+                  >
+                    {x.name}
+                  </button>
+                ))}
+              </div>
+              {!canonProgression && (
+                <p className={styles.help}>
+                  {COPY.quoteNeedsCanon}{' '}
+                  <button className={styles.small} onClick={() => update({ ...PACHELBEL_SONG, keyChroma: project.keyChroma })}>
+                    {COPY.useCanonProgression}
+                  </button>
+                </p>
+              )}
+            </>
+          )}
         </section>
       </div>
 

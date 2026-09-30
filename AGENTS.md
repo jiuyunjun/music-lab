@@ -49,6 +49,7 @@ npm run lint       # ESLint + tsc --noEmit
 - `audio/sequencer.ts` 的 `startStepLoop` 每个十六分音符回调一次并实时读取鼓型；`NoteEvent.offset`（秒）用于扫弦的弦间延迟
 - 乐器房路由：`/play`（键盘）、`/play/guitar`、`/play/drums`
 - 编曲：`theory/song.ts` 的 `buildSong(spec)` 把四轨 × 多遍 × 编曲技巧组装成一条事件流（纯函数，有测试）；`theory/melody.ts`（种子旋律）、`theory/canon.ts`（卡农变奏：每拍和弦音 + 经过音，`level` 0–5 控制密度/高潮；`canonPlan(cycles)` 决定整曲的起伏与声部数）、`theory/bass.ts`（贝斯型）、`theory/random.ts`（mulberry32）
+- 引用旋律：`SongSpec.melody.quote`（`style: 'quote'`）按段播放写好的旋律并移调，前两段作为追随声部；`content/pachelbel.ts` 是帕赫贝尔卡农第一小提琴的原版数据（由 Mutopia MIDI 生成，CC BY 4.0，改动请保持署名）
 - `features/arrange/project.ts`：`Project` 模型、`sanitizeProject`（分享链接和 localStorage 都是不可信输入，必须过它）、`encodeProject`/`decodeProject`
 - 鼓通过 `drumsAsInstrument()` 适配成 `Instrument`，和其他轨道走同一个 `playEvents`；`gainFor` 实现实时静音/独奏/音量
 - 调音量平衡时用真实浏览器测主总线峰值，目标：旋律比伴奏高约 6–8 dB
