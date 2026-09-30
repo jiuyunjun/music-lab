@@ -6,7 +6,7 @@ import { parseSixteenths, shiftEvent } from './events';
 import { generateMelody } from './melody';
 import { degreeOf } from './modes';
 import { createRng } from './random';
-import { buildSong, entryCycle, type SongSpec } from './song';
+import { buildSong, entryCycle, quoteEvents, type SongSpec } from './song';
 
 const chords = ['I', 'V', 'vi', 'IV'].map((r) => romanToChord('C', r));
 const chroma = (n: string) => Note.chroma(n);
@@ -162,6 +162,44 @@ describe('buildSong', () => {
       expect(new Set(end.map((e) => e.time))).toEqual(new Set(['0:0:512']));
       expect(end.find((e) => e.track === 'melody')?.note).toMatch(/^C\d$/); // tonic of C major
       expect(end.filter((e) => e.track === 'chords').map((e) => Note.chroma(e.note)).sort()).toEqual([0, 4, 7]);
+    });
+  });
+
+  describe('quote', () => {
+    // A tiny written-out line in D: one segment per pass.
+    const quote = {
+      key: 'D',
+      start: 2,
+      segments: [[], [[0, 'F#5', 16]], [[0, 'E5', 16]], [[0, 'D5', 16]], [[0, 'C#5', 16]]] as const,
+    };
+    const song = buildSong({
+      ...spec,
+      tonic: 'D',
+      cycles: 2,
+      drums: { ...spec.drums, on: false },
+      melody: { ...spec.melody, style: 'quote', quote },
+    });
+    const notes = (c: number, track: string) =>
+      song.events.filter((e) => e.cycle === c && e.track === track).map((e) => e.note);
+
+    it('plays one segment per pass, starting from `start`', () => {
+      expect(notes(0, 'melody')).toEqual(['E5']);
+      expect(notes(1, 'melody')).toEqual(['D5']);
+    });
+
+    it('the two segments before sound as the other voices, like the real canon', () => {
+      expect(notes(0, 'counter').sort()).toEqual(['F#5']); // segment 0 is empty
+      expect(notes(1, 'counter').sort()).toEqual(['E5', 'F#5']);
+    });
+
+    it('transposes to the song key by the nearest interval', () => {
+      expect(quoteEvents(quote, 1, 'C').map((e) => e.note)).toEqual(['E5']); // down a tone, not up a 7th
+      expect(quoteEvents(quote, 1, 'F').map((e) => e.note)).toEqual(['A5']);
+      expect(quoteEvents(quote, 9, 'D')).toEqual([]);
+    });
+
+    it('closes on the home chord', () => {
+      expect(song.length).toBe(2 * 64 + 16);
     });
   });
 

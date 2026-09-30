@@ -4,9 +4,14 @@ import { BASS_STYLES, type BassStyle } from '../../theory/bass';
 import { romanToChord } from '../../theory/chords';
 import { MODE_IDS, simplestRoot, type ModeId } from '../../theory/modes';
 import { PATTERN_IDS, STRUM_PATTERNS, type PatternId } from '../../theory/patterns';
+import { PACHELBEL_KEY, PACHELBEL_VIOLIN } from '../../content/pachelbel';
 import type { MelodyStyle, SongSpec } from '../../theory/song';
 
-export const MAX_CYCLES = 8;
+/** Last segment you can start an excerpt of the original canon on. */
+export const PACHELBEL_LAST_SEGMENT = PACHELBEL_VIOLIN.length - 1;
+
+/** Enough for Pachelbel's whole canon (27 violin entries). */
+export const MAX_CYCLES = 28;
 
 export const LANES = ['drums', 'bass', 'harmony', 'melody'] as const;
 export type Lane = (typeof LANES)[number];
@@ -22,7 +27,15 @@ export interface Project {
   drums: { on: boolean; preset: string };
   bass: { on: boolean; style: BassStyle };
   harmony: { on: boolean; instrument: InstrumentId; pattern: PatternId; strum: string };
-  melody: { on: boolean; instrument: InstrumentId; style: MelodyStyle; seed: number; double: boolean };
+  melody: {
+    on: boolean;
+    instrument: InstrumentId;
+    style: MelodyStyle;
+    seed: number;
+    double: boolean;
+    /** For the 'quote' style (Pachelbel's own line): which violin entry the excerpt starts on. */
+    excerpt: number;
+  };
   tricks: SongSpec['tricks'];
   mixer: Record<Lane, { volume: number; muted: boolean }>;
 }
@@ -41,7 +54,7 @@ export const DEFAULT_PROJECT: Project = {
   drums: { on: true, preset: 'pop' },
   bass: { on: true, style: 'root' },
   harmony: { on: true, instrument: 'piano', pattern: 'block', strum: 'folk' },
-  melody: { on: true, instrument: 'piano', style: 'generated', seed: 1, double: false },
+  melody: { on: true, instrument: 'piano', style: 'generated', seed: 1, double: false, excerpt: 1 },
   tricks: { build: true, fill: true, lift: false },
   mixer: {
     drums: { volume: 0.9, muted: false },
@@ -78,6 +91,10 @@ export function toSpec(project: Project): SongSpec {
       style: project.melody.style,
       seed: project.melody.seed,
       double: project.melody.double,
+      quote:
+        project.melody.style === 'quote'
+          ? { key: PACHELBEL_KEY, segments: PACHELBEL_VIOLIN, start: project.melody.excerpt }
+          : undefined,
     },
     tricks: project.tricks,
   };
@@ -144,9 +161,10 @@ export function sanitizeProject(input: unknown): Project {
     melody: {
       on: bool(melody.on, d.melody.on),
       instrument: oneOf(melody.instrument, allInstruments, d.melody.instrument),
-      style: oneOf(melody.style, ['generated', 'canon'] as const, d.melody.style),
+      style: oneOf(melody.style, ['generated', 'canon', 'quote'] as const, d.melody.style),
       seed: Math.round(num(melody.seed, 0, 2 ** 31, d.melody.seed)),
       double: bool(melody.double, d.melody.double),
+      excerpt: Math.round(num(melody.excerpt, 1, PACHELBEL_LAST_SEGMENT, d.melody.excerpt)),
     },
     tricks: {
       build: bool(tricks.build, d.tricks.build),

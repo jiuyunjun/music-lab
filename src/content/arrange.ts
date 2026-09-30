@@ -12,7 +12,40 @@ export interface ArrangeTemplate {
 const base = DEFAULT_PROJECT;
 const mixer = (overrides: Partial<Project['mixer']> = {}): Project['mixer'] => ({ ...base.mixer, ...overrides });
 
+/** The canon progression in D, as Pachelbel's ground bass plays it. */
+export const PACHELBEL_SONG = {
+  keyChroma: 2,
+  mode: 'ionian' as const,
+  progression: ['I', 'V', 'vi', 'iii', 'IV', 'I', 'IV', 'V'],
+  beatsPerChord: 2 as const,
+};
+
+/** Where to start and how long to play the original canon. */
+export const PACHELBEL_EXCERPTS = [
+  { id: 'opening', name: '从头开始', start: 1, cycles: 8, help: '第一把小提琴进来，另外两把依次追上。' },
+  { id: 'famous', name: '经典名段', start: 7, cycles: 5, help: '最有名的十六分音符段落（第 9–10 段）和它前后的铺垫。' },
+  { id: 'second-half', name: '后半段', start: 15, cycles: 8, help: '重复音、跳音和装饰音，越来越华丽。' },
+  { id: 'full', name: '完整版', start: 1, cycles: 27, help: '全部 27 段，大约 4 分钟。' },
+] as const;
+
 export const ARRANGE_TEMPLATES: ArrangeTemplate[] = [
+  {
+    id: 'pachelbel',
+    name: '帕赫贝尔原版卡农',
+    blurb: '原曲第一小提琴的真实旋律（经典名段），另外两把小提琴依次晚一段追进来——这就是真正的卡农。',
+    project: {
+      ...base,
+      ...PACHELBEL_SONG,
+      bpm: 104,
+      cycles: 5,
+      drums: { on: false, preset: 'pop' },
+      bass: { on: true, style: 'root' },
+      harmony: { on: true, instrument: 'pad', pattern: 'pad', strum: 'folk' },
+      melody: { on: true, instrument: 'piano', style: 'quote', seed: 1, double: false, excerpt: 7 },
+      tricks: { build: false, fill: false, lift: false },
+      mixer: mixer({ harmony: { volume: 0.4, muted: false } }),
+    },
+  },
   {
     id: 'canon-piano',
     name: '卡农风钢琴',
@@ -29,7 +62,7 @@ export const ARRANGE_TEMPLATES: ArrangeTemplate[] = [
       bass: { on: true, style: 'root' },
       // Held chords underneath, like Pachelbel's continuo: they support the voices without crowding their register.
       harmony: { on: true, instrument: 'pad', pattern: 'pad', strum: 'folk' },
-      melody: { on: true, instrument: 'piano', style: 'canon', seed: 11, double: false },
+      melody: { on: true, instrument: 'piano', style: 'canon', seed: 11, double: false, excerpt: 1 },
       tricks: { build: false, fill: false, lift: false },
       mixer: mixer({ harmony: { volume: 0.55, muted: false } }),
     },
@@ -49,7 +82,7 @@ export const ARRANGE_TEMPLATES: ArrangeTemplate[] = [
       drums: { on: true, preset: 'boombap' },
       bass: { on: true, style: 'root' },
       harmony: { on: true, instrument: 'epiano', pattern: 'block', strum: 'folk' },
-      melody: { on: true, instrument: 'epiano', style: 'generated', seed: 5, double: false },
+      melody: { on: true, instrument: 'epiano', style: 'generated', seed: 5, double: false, excerpt: 1 },
       tricks: { build: true, fill: false, lift: false },
       mixer: mixer({ drums: { volume: 0.7, muted: false } }),
     },
@@ -69,7 +102,7 @@ export const ARRANGE_TEMPLATES: ArrangeTemplate[] = [
       drums: { on: false, preset: 'pop' },
       bass: { on: true, style: 'root' },
       harmony: { on: true, instrument: 'guitar', pattern: 'strum', strum: 'folk' },
-      melody: { on: true, instrument: 'guitar', style: 'generated', seed: 21, double: false },
+      melody: { on: true, instrument: 'guitar', style: 'generated', seed: 21, double: false, excerpt: 1 },
       tricks: { build: true, fill: false, lift: false },
       mixer: mixer(),
     },
@@ -89,7 +122,7 @@ export const ARRANGE_TEMPLATES: ArrangeTemplate[] = [
       drums: { on: true, preset: 'rock' },
       bass: { on: true, style: 'pulse' },
       harmony: { on: true, instrument: 'guitar', pattern: 'strum', strum: 'eighths' },
-      melody: { on: true, instrument: 'piano', style: 'generated', seed: 8, double: true },
+      melody: { on: true, instrument: 'piano', style: 'generated', seed: 8, double: true, excerpt: 1 },
       tricks: { build: true, fill: true, lift: true },
       mixer: mixer(),
     },
@@ -109,7 +142,7 @@ export const ARRANGE_TEMPLATES: ArrangeTemplate[] = [
       drums: { on: true, preset: 'disco' },
       bass: { on: true, style: 'octave' },
       harmony: { on: true, instrument: 'epiano', pattern: 'block', strum: 'folk' },
-      melody: { on: true, instrument: 'organ', style: 'generated', seed: 3, double: false },
+      melody: { on: true, instrument: 'organ', style: 'generated', seed: 3, double: false, excerpt: 1 },
       tricks: { build: true, fill: true, lift: false },
       mixer: mixer(),
     },
@@ -129,7 +162,7 @@ export const ARRANGE_TEMPLATES: ArrangeTemplate[] = [
       drums: { on: true, preset: 'bossa' },
       bass: { on: true, style: 'rootFifth' },
       harmony: { on: true, instrument: 'guitar', pattern: 'broken', strum: 'folk' },
-      melody: { on: true, instrument: 'epiano', style: 'generated', seed: 14, double: false },
+      melody: { on: true, instrument: 'epiano', style: 'generated', seed: 14, double: false, excerpt: 1 },
       tricks: { build: false, fill: false, lift: false },
       mixer: mixer({ drums: { volume: 0.7, muted: false } }),
     },
@@ -153,8 +186,12 @@ export const BASS_STYLE_COPY: Record<BassStyle, { name: string; help: string }> 
 
 export const MELODY_STYLE_COPY: Record<MelodyStyle, { name: string; help: string }> = {
   generated: { name: '自动旋律', help: '强拍落在和弦音上、其他音按音阶一步步走，每小节节奏重复。每一遍旋律相同，好记。' },
+  quote: {
+    name: '原版卡农',
+    help: '帕赫贝尔《D 大调卡农》（约 1680 年，公有领域）第一小提琴的原版旋律。三把小提琴拉同一条旋律，每把晚一段进来。会自动换成卡农进行、每和弦 2 拍。',
+  },
   canon: {
-    name: '卡农',
+    name: '卡农（自动生成）',
     help: '像帕赫贝尔的卡农：每一遍的旋律都比上一遍更密（二分 → 四分 → 八分 → 十六分音符），前两遍的旋律会依次“追”进来。每一拍都落在和弦音上，所以几个声部叠在一起也和谐。重复 6 遍以上时会自动安排高潮（分解和弦 → 升高八度、全体加倍、最响），然后回落，最后停在主和弦上。',
   },
 };
@@ -202,6 +239,10 @@ export const ARRANGE_COPY = {
   stop: '■ 停止',
   position: (cycle: number, cycles: number) => `第 ${cycle} / ${cycles} 遍`,
   ending: '尾声',
+  excerpt: '从哪里开始',
+  quoteNeedsCanon: '原版旋律是按卡农进行写的，换了和弦会不和谐。',
+  useCanonProgression: '恢复卡农进行',
+  seekHelp: '点击时间轴上的某一遍，直接跳到那里播放。',
   share: '🔗 复制分享链接',
   copied: '已复制！发给朋友，打开就是这首歌。',
   copyFailed: '复制失败，请手动复制地址栏里的链接。',

@@ -1,14 +1,30 @@
-import { Note } from 'tonal';
+import { Interval, Note } from 'tonal';
 import { bassLine, type BassStyle } from './bass';
 import { canonLine, canonPlan, type CanonPass } from './canon';
 import { bassNote, diatonicChords, romanToChord, voiceChord } from './chords';
 import { drumEvents, type DrumPattern } from './drums';
-import { parseSixteenths, shiftEvent, sixteenths } from './events';
+import { parseSixteenths, shiftEvent, sixteenths, type NoteEvent } from './events';
 import { generateMelody } from './melody';
 import type { ModeId } from './modes';
 import { accompany, type ArrangedEvent, type PatternId } from './patterns';
 
-export type MelodyStyle = 'generated' | 'canon';
+/**
+ * generated: a tune that repeats every pass; canon: generated canon variations;
+ * quote: a written-out line (e.g. Pachelbel's own violin part), one segment per pass.
+ */
+export type MelodyStyle = 'generated' | 'canon' | 'quote';
+
+/** [start, pitch, length] within one pass, in sixteenths. */
+export type QuoteNote = readonly [start: number, note: string, length: number];
+
+export interface Quote {
+  /** Key the segments are written in; they're transposed to the song's tonic. */
+  key: string;
+  /** One segment per pass. */
+  segments: readonly (readonly QuoteNote[])[];
+  /** Segment played on the first melodic pass. */
+  start: number;
+}
 
 export interface SongSpec {
   tonic: string;
@@ -20,7 +36,7 @@ export interface SongSpec {
   drums: { on: boolean; pattern: DrumPattern };
   bass: { on: boolean; style: BassStyle };
   harmony: { on: boolean; pattern: PatternId; strumPattern?: string };
-  melody: { on: boolean; style: MelodyStyle; seed: number; double: boolean };
+  melody: { on: boolean; style: MelodyStyle; seed: number; double: boolean; quote?: Quote };
   tricks: {
     /** Layers enter one by one: chords, then bass + drums, then melody. */
     build: boolean;
@@ -91,13 +107,25 @@ export function buildSong(spec: SongSpec): Song {
   const plan = isCanon ? canonPlan(spec.cycles - melodyEntry) : [];
   const passFor = (c: number): CanonPass | undefined => plan[Math.max(0, c - melodyEntry)];
 
+  const chordLength = spec.beatsPerChord * 4;
+  const toArranged = (line: NoteEvent[]) =>
+    line.map((e): ArrangedEvent => ({ ...e, track: 'melody', step: Math.floor(parseSixteenths(e.time) / chordLength) }));
+
+  // A quoted line: segment k plays on the k-th melodic pass, and (as in a real canon)
+  // the two segments before it sound at the same time as extra voices.
+  const quote = spec.melody.on && spec.melody.style === 'quote' ? spec.melody.quote : undefined;
+  const quoteSegment = (c: number) => (quote ? quote.start + c - melodyEntry : -1);
+  const quoteLine = (index: number) => (quote ? toArranged(quoteEvents(quote, index, spec.tonic)) : []);
+
   const melodies = Array.from({ length: spec.cycles }, (_, c) => {
+    if (quote) return quoteLine(quoteSegment(c));
     const common = { tonic: spec.tonic, mode: spec.mode, beatsPerChord: spec.beatsPerChord };
     // A song wants its tune to repeat; a canon changes every pass.
-    const line = isCanon
-      ? canonLine(chords, { ...common, seed: spec.melody.seed + c, level: passFor(c)?.level ?? 0 })
-      : generateMelody(chords, { ...common, seed: spec.melody.seed });
-    return line.map((e): ArrangedEvent => ({ ...e, track: 'melody', step: Math.floor(parseSixteenths(e.time) / (spec.beatsPerChord * 4)) }));
+    return toArranged(
+      isCanon
+        ? canonLine(chords, { ...common, seed: spec.melody.seed + c, level: passFor(c)?.level ?? 0 })
+        : generateMelody(chords, { ...common, seed: spec.melody.seed }),
+    );
   });
 
   for (let c = 0; c < spec.cycles; c++) {
@@ -131,6 +159,14 @@ export function buildSong(spec: SongSpec): Song {
         const softer = back === 1 ? 0.72 : 0.55;
         events.push(...earlier.map((e) => at({ ...e, track: 'counter', velocity: e.velocity * softer }, c)));
       }
+      // Quote: the other two violins are always one and two segments behind,
+      // even on the first pass of an excerpt - that's where they are in the piece.
+      if (quote) {
+        [1, 2].forEach((back) => {
+          const softer = back === 1 ? 0.85 : 0.75;
+          events.push(...quoteLine(quoteSegment(c) - back).map((e) => at({ ...e, track: 'counter', velocity: e.velocity * softer }, c)));
+        });
+      }
     }
   }
 
@@ -140,6 +176,8 @@ export function buildSong(spec: SongSpec): Song {
     for (const e of events) {
       if (e.track !== 'drums') e.velocity *= passFor(e.cycle)?.dynamic ?? 1;
     }
+  }
+  if (isCanon || quote) {
     events.push(...ending(spec, events, length, spec.cycles));
     length += ENDING_LENGTH;
   }
@@ -153,6 +191,24 @@ export function buildSong(spec: SongSpec): Song {
 
   events.sort((a, b) => parseSixteenths(a.time) - parseSixteenths(b.time));
   return { events, cycleLength, length };
+}
+
+/**
+ * One segment of a quote as note events, moved from the quote's key to the
+ * song's tonic by the nearest interval (D -> C goes down a tone, not up a seventh).
+ * Out-of-range segments are silent.
+ */
+export function quoteEvents(quote: Quote, index: number, tonic: string): NoteEvent[] {
+  const segment = quote.segments[index];
+  if (!segment || index < 0) return [];
+  const up = Interval.semitones(Interval.distance(quote.key, tonic)) ?? 0;
+  const shift = Interval.fromSemitones(up > 6 ? up - 12 : up);
+  return segment.map(([t, note, length]) => ({
+    time: sixteenths(t),
+    note: Note.simplify(Note.transpose(note, shift)),
+    duration: sixteenths(length),
+    velocity: t % 16 === 0 ? 0.8 : t % 4 === 0 ? 0.72 : 0.64,
+  }));
 }
 
 /** One bar for the final chord. */
