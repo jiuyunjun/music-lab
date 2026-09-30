@@ -14,8 +14,11 @@ import { accompany, type ArrangedEvent, type PatternId } from './patterns';
  */
 export type MelodyStyle = 'generated' | 'canon' | 'quote';
 
-/** [start, pitch, length] within one pass, in sixteenths. */
-export type QuoteNote = readonly [start: number, note: string, length: number];
+/**
+ * [start, pitch, length, velocity?] within one pass, in sixteenths. Times may be
+ * fractional (a triplet eighth is 4/3 of a sixteenth).
+ */
+export type QuoteNote = readonly [start: number, note: string, length: number, velocity?: number];
 
 export interface Quote {
   /** Key the segments are written in; they're transposed to the song's tonic. */
@@ -24,6 +27,12 @@ export interface Quote {
   segments: readonly (readonly QuoteNote[])[];
   /** Segment played on the first melodic pass. */
   start: number;
+  /** Earlier segments that sound at the same time, as in a canon (default 2; 0 for a solo piece). */
+  voices?: number;
+  /** Chords per segment (roman numerals), when sections differ; otherwise the song's progression. */
+  progressions?: readonly (readonly string[])[];
+  /** Add a closing bar on the home chord (default true). */
+  ending?: boolean;
 }
 
 export interface SongSpec {
@@ -56,6 +65,8 @@ export interface Song {
   events: SongEvent[];
   cycleLength: number;
   length: number;
+  /** Chord symbols of each pass (they differ when a quote brings its own sections). */
+  cycleChords: string[][];
 }
 
 /** Cycle in which each layer first plays when "build" is on. */
@@ -88,13 +99,6 @@ export function buildSong(spec: SongSpec): Song {
   const events: SongEvent[] = [];
   const at = (e: ArrangedEvent, cycle: number): SongEvent => ({ ...shiftEvent(e, cycle * cycleLength), cycle });
 
-  const harmony = accompany(chords, {
-    pattern: spec.harmony.pattern,
-    beatsPerChord: spec.beatsPerChord,
-    bass: false,
-    strumPattern: spec.harmony.strumPattern,
-  });
-  const bass = bassLine(chords, spec.bass.style, spec.beatsPerChord);
   const bars = Math.ceil(cycleLength / 16);
   const drums: ArrangedEvent[] = drumEvents(spec.drums.pattern, bars)
     .filter((e) => parseSixteenths(e.time) < cycleLength)
@@ -112,10 +116,35 @@ export function buildSong(spec: SongSpec): Song {
     line.map((e): ArrangedEvent => ({ ...e, track: 'melody', step: Math.floor(parseSixteenths(e.time) / chordLength) }));
 
   // A quoted line: segment k plays on the k-th melodic pass, and (as in a real canon)
-  // the two segments before it sound at the same time as extra voices.
+  // earlier segments can sound at the same time as extra voices.
   const quote = spec.melody.on && spec.melody.style === 'quote' ? spec.melody.quote : undefined;
   const quoteSegment = (c: number) => (quote ? quote.start + c - melodyEntry : -1);
   const quoteLine = (index: number) => (quote ? toArranged(quoteEvents(quote, index, spec.tonic)) : []);
+
+  // Chords per pass: a quote may bring different chords for each section.
+  const chordsFor = (c: number) => {
+    const romans = quote?.progressions?.[quoteSegment(c)];
+    return romans ? romans.map((r) => romanToChord(spec.tonic, r)) : chords;
+  };
+  const layerCache = new Map<string, { harmony: ArrangedEvent[]; bass: ArrangedEvent[] }>();
+  const layersFor = (c: number) => {
+    const passChords = chordsFor(c);
+    const key = passChords.map((ch) => ch.symbol).join();
+    let layers = layerCache.get(key);
+    if (!layers) {
+      layers = {
+        harmony: accompany(passChords, {
+          pattern: spec.harmony.pattern,
+          beatsPerChord: spec.beatsPerChord,
+          bass: false,
+          strumPattern: spec.harmony.strumPattern,
+        }),
+        bass: bassLine(passChords, spec.bass.style, spec.beatsPerChord),
+      };
+      layerCache.set(key, layers);
+    }
+    return layers;
+  };
 
   const melodies = Array.from({ length: spec.cycles }, (_, c) => {
     if (quote) return quoteLine(quoteSegment(c));
@@ -129,6 +158,7 @@ export function buildSong(spec: SongSpec): Song {
   });
 
   for (let c = 0; c < spec.cycles; c++) {
+    const { harmony, bass } = layersFor(c);
     if (spec.harmony.on && enters('chords', c)) events.push(...harmony.map((e) => at(e, c)));
     if (spec.bass.on && enters('bass', c)) events.push(...bass.map((e) => at(e, c)));
 
@@ -159,13 +189,11 @@ export function buildSong(spec: SongSpec): Song {
         const softer = back === 1 ? 0.72 : 0.55;
         events.push(...earlier.map((e) => at({ ...e, track: 'counter', velocity: e.velocity * softer }, c)));
       }
-      // Quote: the other two violins are always one and two segments behind,
+      // Quote: in a canon the other voices are always one and two segments behind,
       // even on the first pass of an excerpt - that's where they are in the piece.
-      if (quote) {
-        [1, 2].forEach((back) => {
-          const softer = back === 1 ? 0.85 : 0.75;
-          events.push(...quoteLine(quoteSegment(c) - back).map((e) => at({ ...e, track: 'counter', velocity: e.velocity * softer }, c)));
-        });
+      for (let back = 1; back <= (quote?.voices ?? 2) && quote; back++) {
+        const softer = back === 1 ? 0.85 : 0.75;
+        events.push(...quoteLine(quoteSegment(c) - back).map((e) => at({ ...e, track: 'counter', velocity: e.velocity * softer }, c)));
       }
     }
   }
@@ -177,7 +205,7 @@ export function buildSong(spec: SongSpec): Song {
       if (e.track !== 'drums') e.velocity *= passFor(e.cycle)?.dynamic ?? 1;
     }
   }
-  if (isCanon || quote) {
+  if (isCanon || (quote && quote.ending !== false)) {
     events.push(...ending(spec, events, length, spec.cycles));
     length += ENDING_LENGTH;
   }
@@ -190,7 +218,8 @@ export function buildSong(spec: SongSpec): Song {
   }
 
   events.sort((a, b) => parseSixteenths(a.time) - parseSixteenths(b.time));
-  return { events, cycleLength, length };
+  const cycleChords = Array.from({ length: spec.cycles }, (_, c) => chordsFor(c).map((ch) => ch.symbol));
+  return { events, cycleLength, length, cycleChords };
 }
 
 /**
@@ -203,11 +232,11 @@ export function quoteEvents(quote: Quote, index: number, tonic: string): NoteEve
   if (!segment || index < 0) return [];
   const up = Interval.semitones(Interval.distance(quote.key, tonic)) ?? 0;
   const shift = Interval.fromSemitones(up > 6 ? up - 12 : up);
-  return segment.map(([t, note, length]) => ({
+  return segment.map(([t, note, length, velocity]) => ({
     time: sixteenths(t),
     note: Note.simplify(Note.transpose(note, shift)),
     duration: sixteenths(length),
-    velocity: t % 16 === 0 ? 0.8 : t % 4 === 0 ? 0.72 : 0.64,
+    velocity: velocity ?? (t % 16 === 0 ? 0.8 : t % 4 === 0 ? 0.72 : 0.64),
   }));
 }
 

@@ -4,11 +4,9 @@ import { BASS_STYLES, type BassStyle } from '../../theory/bass';
 import { romanToChord } from '../../theory/chords';
 import { MODE_IDS, simplestRoot, type ModeId } from '../../theory/modes';
 import { PATTERN_IDS, STRUM_PATTERNS, type PatternId } from '../../theory/patterns';
-import { PACHELBEL_KEY, PACHELBEL_VIOLIN } from '../../content/pachelbel';
+import { QUOTE_PIECE_IDS, QUOTE_PIECES, lastSegment, type QuotePieceId } from '../../content/quotes';
 import type { MelodyStyle, SongSpec } from '../../theory/song';
 
-/** Last segment you can start an excerpt of the original canon on. */
-export const PACHELBEL_LAST_SEGMENT = PACHELBEL_VIOLIN.length - 1;
 
 /** Enough for Pachelbel's whole canon (27 violin entries). */
 export const MAX_CYCLES = 28;
@@ -22,7 +20,8 @@ export interface Project {
   mode: ModeId;
   bpm: number;
   progression: string[];
-  beatsPerChord: 2 | 4;
+  /** 3 = one chord per 3/4 bar. */
+  beatsPerChord: 2 | 3 | 4;
   cycles: number;
   drums: { on: boolean; preset: string };
   bass: { on: boolean; style: BassStyle };
@@ -33,7 +32,9 @@ export interface Project {
     style: MelodyStyle;
     seed: number;
     double: boolean;
-    /** For the 'quote' style (Pachelbel's own line): which violin entry the excerpt starts on. */
+    /** For the 'quote' style: which written-out piece... */
+    piece: QuotePieceId;
+    /** ...and which of its segments the excerpt starts on. */
     excerpt: number;
   };
   tricks: SongSpec['tricks'];
@@ -54,7 +55,7 @@ export const DEFAULT_PROJECT: Project = {
   drums: { on: true, preset: 'pop' },
   bass: { on: true, style: 'root' },
   harmony: { on: true, instrument: 'piano', pattern: 'block', strum: 'folk' },
-  melody: { on: true, instrument: 'piano', style: 'generated', seed: 1, double: false, excerpt: 1 },
+  melody: { on: true, instrument: 'piano', style: 'generated', seed: 1, double: false, piece: 'pachelbel', excerpt: 1 },
   tricks: { build: true, fill: true, lift: false },
   mixer: {
     drums: { volume: 0.9, muted: false },
@@ -93,11 +94,16 @@ export function toSpec(project: Project): SongSpec {
       double: project.melody.double,
       quote:
         project.melody.style === 'quote'
-          ? { key: PACHELBEL_KEY, segments: PACHELBEL_VIOLIN, start: project.melody.excerpt }
+          ? quoteSpec(project.melody.piece, project.melody.excerpt)
           : undefined,
     },
     tricks: project.tricks,
   };
+}
+
+function quoteSpec(piece: QuotePieceId, start: number): SongSpec['melody']['quote'] {
+  const { key, segments, progressions, voices, ending } = QUOTE_PIECES[piece];
+  return { key, segments, progressions, voices, ending, start };
 }
 
 /** Which mixer lane an event track belongs to. */
@@ -138,6 +144,7 @@ export function sanitizeProject(input: unknown): Project {
   const melody = obj(p.melody);
   const tricks = obj(p.tricks);
   const mixerIn = obj(p.mixer);
+  const piece = oneOf(melody.piece, QUOTE_PIECE_IDS, d.melody.piece);
   const allInstruments = [...new Set([...MELODY_INSTRUMENTS, ...HARMONY_INSTRUMENTS])];
   return {
     v: 1,
@@ -145,7 +152,7 @@ export function sanitizeProject(input: unknown): Project {
     mode: oneOf(p.mode, MODE_IDS, d.mode),
     bpm: Math.round(num(p.bpm, 40, 200, d.bpm)),
     progression: validProgression(p.progression) ?? d.progression,
-    beatsPerChord: oneOf(p.beatsPerChord, [2, 4] as const, d.beatsPerChord),
+    beatsPerChord: oneOf(p.beatsPerChord, [2, 3, 4] as const, d.beatsPerChord),
     cycles: Math.round(num(p.cycles, 1, MAX_CYCLES, d.cycles)),
     drums: {
       on: bool(drums.on, d.drums.on),
@@ -164,7 +171,8 @@ export function sanitizeProject(input: unknown): Project {
       style: oneOf(melody.style, ['generated', 'canon', 'quote'] as const, d.melody.style),
       seed: Math.round(num(melody.seed, 0, 2 ** 31, d.melody.seed)),
       double: bool(melody.double, d.melody.double),
-      excerpt: Math.round(num(melody.excerpt, 1, PACHELBEL_LAST_SEGMENT, d.melody.excerpt)),
+      piece,
+      excerpt: Math.round(num(melody.excerpt, QUOTE_PIECES[piece].firstSegment, lastSegment(piece), QUOTE_PIECES[piece].firstSegment)),
     },
     tricks: {
       build: bool(tricks.build, d.tricks.build),

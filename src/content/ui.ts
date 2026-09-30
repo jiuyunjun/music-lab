@@ -17,7 +17,7 @@ export const APP_COPY = {
   errorBody: '这个模块遇到了错误，其他页面不受影响。可以点“重试”，或者换个页面再回来。',
   errorRetry: '重试',
   footer:
-    '钢琴采样：Salamander Grand Piano（Alexander Holm，CC-BY 3.0）· 吉他采样：tonejs-instruments / University of Iowa（CC-BY 3.0）· 卡农原版旋律：Mutopia Project，Michael Fischer v. Mollard 制谱（CC BY 4.0）',
+    '钢琴采样：Salamander Grand Piano（Alexander Holm，CC-BY 3.0）· 吉他采样：tonejs-instruments / University of Iowa（CC-BY 3.0）· 卡农原谱：Mutopia Project，Michael Fischer v. Mollard 制谱（CC BY 4.0）· 爱的罗曼史原谱：Mutopia Project，Jeff Covey 制谱（CC BY-SA 2.5）',
 };
 
 export const HOME_COPY = {

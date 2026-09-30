@@ -9,12 +9,14 @@ import {
   BASS_STYLE_COPY,
   LANE_COPY,
   MELODY_STYLE_COPY,
-  PACHELBEL_EXCERPTS,
-  PACHELBEL_SONG,
+  QUOTE_COPY,
+  quoteSettings,
+  type QuoteExcerpt,
   TRICK_COPY,
 } from '../../content/arrange';
 import { PATTERN_COPY, PROGRESSIONS } from '../../content/chords';
 import { DRUM_GROUPS, DRUM_PRESETS } from '../../content/drums';
+import { QUOTE_PIECE_IDS, QUOTE_PIECES, type QuotePieceId } from '../../content/quotes';
 import { STRUM_PATTERN_COPY } from '../../content/guitar';
 import { MODE_COPY } from '../../content/modes';
 import { INSTRUMENT_COPY } from '../../content/ui';
@@ -157,18 +159,45 @@ export function ArrangePage() {
   const setMix = (lane: Lane, patch: Partial<Project['mixer'][Lane]>) =>
     setProject((p) => ({ ...p, mixer: { ...p.mixer, [lane]: { ...p.mixer[lane], ...patch } } }));
 
-  /** Pachelbel's own line only fits his progression: switch to it (keeping the key) and pick an excerpt. */
-  const choosePachelbel = (excerpt: (typeof PACHELBEL_EXCERPTS)[number]) =>
-    setProject((p) => ({
-      ...p,
-      ...PACHELBEL_SONG,
-      keyChroma: p.melody.style === 'quote' ? p.keyChroma : PACHELBEL_SONG.keyChroma,
-      cycles: excerpt.cycles,
-      tricks: { ...p.tricks, build: false },
-      melody: { ...p.melody, on: true, style: 'quote', excerpt: excerpt.start },
-    }));
-  const canonProgression =
-    project.progression.join() === PACHELBEL_SONG.progression.join() && project.beatsPerChord === PACHELBEL_SONG.beatsPerChord;
+  /**
+   * A written-out piece only fits its own chords and meter: switch to them and pick
+   * an excerpt. Keeps the key when you're already on this piece. A solo piece
+   * (no canon voices) also silences the other layers, since it carries its own accompaniment.
+   */
+  const chooseQuote = (piece: QuotePieceId, excerpt?: QuoteExcerpt) =>
+    setProject((p) => {
+      const same = p.melody.style === 'quote' && p.melody.piece === piece;
+      const { cycles, excerpt: start, ...song } = quoteSettings(piece, excerpt);
+      const solo = QUOTE_PIECES[piece].voices === 0;
+      return {
+        ...p,
+        ...song,
+        keyChroma: same ? p.keyChroma : song.keyChroma,
+        bpm: same ? p.bpm : song.bpm,
+        cycles,
+        tricks: { ...p.tricks, build: false },
+        ...(solo && !same
+          ? {
+              drums: { ...p.drums, on: false },
+              bass: { ...p.bass, on: false },
+              harmony: { ...p.harmony, on: false },
+            }
+          : {}),
+        melody: {
+          ...p.melody,
+          on: true,
+          style: 'quote',
+          piece,
+          excerpt: start,
+          instrument: same ? p.melody.instrument : QUOTE_PIECES[piece].instrument,
+        },
+      };
+    });
+  const quotePiece = project.melody.style === 'quote' ? project.melody.piece : null;
+  const originalSong =
+    !quotePiece ||
+    (project.progression.join() === QUOTE_PIECES[quotePiece].song.progression.join() &&
+      project.beatsPerChord === QUOTE_PIECES[quotePiece].song.beatsPerChord);
 
   const chooseMode = (mode: ModeId) =>
     setProject((p) => ({ ...p, mode, progression: reharmonize(p.progression, mode) }));
@@ -245,9 +274,10 @@ export function ArrangePage() {
           </button>
         )}
         <div className={styles.strip}>
-          {project.progression.map((roman, i) => (
+          {/* Chords of the pass being played: a piece may change chords between sections. */}
+          {(song.cycleChords[Math.min(position?.cycle ?? 0, song.cycleChords.length - 1)] ?? []).map((symbol, i) => (
             <span key={i} data-active={position?.step === i}>
-              {romanToChord(tonic, roman).symbol}
+              {symbol}
             </span>
           ))}
         </div>
@@ -310,10 +340,11 @@ export function ArrangePage() {
           </label>
           <label>
             {COPY.beatsPerChord}
-            <select value={project.beatsPerChord} onChange={(e) => update({ beatsPerChord: Number(e.target.value) as 2 | 4 })}>
-              {[2, 4].map((n) => (
+            <select value={project.beatsPerChord} onChange={(e) => update({ beatsPerChord: Number(e.target.value) as 2 | 3 | 4 })}>
+              {[2, 3, 4].map((n) => (
                 <option key={n} value={n}>
                   {COPY.beats(n)}
+                  {n === 3 && COPY.threeFour}
                 </option>
               ))}
             </select>
@@ -465,14 +496,24 @@ export function ArrangePage() {
             {instrumentSelect(project.melody.instrument, MELODY_INSTRUMENTS, (v) => setLane('melody', { instrument: v }))}
           </div>
           <div className={styles.choices}>
-            {(['generated', 'canon', 'quote'] as const).map((s) => (
+            {(['generated', 'canon'] as const).map((s) => (
               <button
                 key={s}
                 className="button"
                 aria-pressed={project.melody.style === s}
-                onClick={() => (s === 'quote' ? choosePachelbel(PACHELBEL_EXCERPTS[1]) : setLane('melody', { style: s, on: true }))}
+                onClick={() => setLane('melody', { style: s, on: true })}
               >
                 {MELODY_STYLE_COPY[s].name}
+              </button>
+            ))}
+            {QUOTE_PIECE_IDS.map((piece) => (
+              <button
+                key={piece}
+                className="button"
+                aria-pressed={quotePiece === piece}
+                onClick={() => chooseQuote(piece, piece === 'pachelbel' ? QUOTE_COPY.pachelbel.excerpts[1] : undefined)}
+              >
+                {QUOTE_COPY[piece].name}
               </button>
             ))}
             {project.melody.style !== 'quote' && (
@@ -492,28 +533,34 @@ export function ArrangePage() {
               {COPY.double}
             </label>
           </div>
-          <p className={styles.help}>{MELODY_STYLE_COPY[project.melody.style].help}</p>
-          {project.melody.style === 'quote' && (
+          <p className={styles.help}>{quotePiece ? QUOTE_COPY[quotePiece].help : MELODY_STYLE_COPY[project.melody.style].help}</p>
+          {quotePiece && (
             <>
               <div className={styles.label}>{COPY.excerpt}</div>
               <div className={styles.choices}>
-                {PACHELBEL_EXCERPTS.map((x) => (
+                {QUOTE_COPY[quotePiece].excerpts.map((x) => (
                   <button
                     key={x.id}
                     className={styles.small}
                     title={x.help}
                     aria-pressed={project.melody.excerpt === x.start && project.cycles === x.cycles}
-                    onClick={() => choosePachelbel(x)}
+                    onClick={() => chooseQuote(quotePiece, x)}
                   >
                     {x.name}
                   </button>
                 ))}
               </div>
-              {!canonProgression && (
+              {!originalSong && (
                 <p className={styles.help}>
-                  {COPY.quoteNeedsCanon}{' '}
-                  <button className={styles.small} onClick={() => update({ ...PACHELBEL_SONG, keyChroma: project.keyChroma })}>
-                    {COPY.useCanonProgression}
+                  {COPY.quoteNeedsOriginal}{' '}
+                  <button
+                    className={styles.small}
+                    onClick={() => {
+                      const { progression, beatsPerChord } = QUOTE_PIECES[quotePiece].song;
+                      update({ progression, beatsPerChord });
+                    }}
+                  >
+                    {COPY.useOriginalSong}
                   </button>
                 </p>
               )}

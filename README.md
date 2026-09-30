@@ -34,6 +34,17 @@ npm run dev     # 打开 http://localhost:5173
 
 电脑键盘弹奏：`A W S E D F T G Y H U J K`，`Z / X` 切换八度。
 
+## 素材与许可
+
+| 素材 | 来源 | 许可 |
+| --- | --- | --- |
+| 钢琴采样 `public/samples/salamander/` | Salamander Grand Piano，Alexander Holm | CC BY 3.0 |
+| 吉他采样 `public/samples/guitar-acoustic/` | tonejs-instruments / University of Iowa | CC BY 3.0 |
+| 帕赫贝尔卡农原谱数据 `src/content/pachelbel.ts` | Mutopia Project，Michael Fischer v. Mollard 制谱 | CC BY 4.0 |
+| 爱的罗曼史原谱数据 `src/content/romance.ts` | Mutopia Project，Jeff Covey 制谱 | **CC BY-SA 2.5**（该文件同样以 CC BY-SA 2.5 发布） |
+
+乐曲本身（帕赫贝尔《D 大调卡农》、《爱的罗曼史》）均为公有领域。详见 [public/samples/LICENSES.md](public/samples/LICENSES.md)。
+
 ## 状态
 
 ✅ M1 最小可玩版本：乐器房（钢琴 / 电钢 / 电子管风琴 / 合成器）+ 音阶实验室（7 种调式、平行/相对对比、Drone 即兴）。

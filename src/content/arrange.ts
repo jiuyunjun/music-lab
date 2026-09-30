@@ -1,6 +1,7 @@
 import { DEFAULT_PROJECT, type Lane, type Project } from '../features/arrange/project';
 import type { BassStyle } from '../theory/bass';
 import type { MelodyStyle } from '../theory/song';
+import { QUOTE_PIECES, type QuotePieceId } from './quotes';
 
 export interface ArrangeTemplate {
   id: string;
@@ -12,36 +13,73 @@ export interface ArrangeTemplate {
 const base = DEFAULT_PROJECT;
 const mixer = (overrides: Partial<Project['mixer']> = {}): Project['mixer'] => ({ ...base.mixer, ...overrides });
 
-/** The canon progression in D, as Pachelbel's ground bass plays it. */
-export const PACHELBEL_SONG = {
-  keyChroma: 2,
-  mode: 'ionian' as const,
-  progression: ['I', 'V', 'vi', 'iii', 'IV', 'I', 'IV', 'V'],
-  beatsPerChord: 2 as const,
+export interface QuoteExcerpt {
+  id: string;
+  name: string;
+  start: number;
+  cycles: number;
+  help: string;
+}
+
+/** Names, explanations and excerpts of the written-out pieces. */
+export const QUOTE_COPY: Record<QuotePieceId, { name: string; help: string; excerpts: QuoteExcerpt[] }> = {
+  pachelbel: {
+    name: '原版卡农',
+    help: '帕赫贝尔《D 大调卡农》（约 1680 年，公有领域）第一小提琴的原版旋律。三把小提琴拉同一条旋律，每把晚一段进来。',
+    excerpts: [
+      { id: 'opening', name: '从头开始', start: 1, cycles: 8, help: '第一把小提琴进来，另外两把依次追上。' },
+      { id: 'famous', name: '经典名段', start: 7, cycles: 5, help: '最有名的十六分音符段落（第 9–10 段）和它前后的铺垫。' },
+      { id: 'second-half', name: '后半段', start: 15, cycles: 8, help: '重复音、跳音和装饰音，越来越华丽。' },
+      { id: 'full', name: '完整版', start: 1, cycles: 27, help: '全部 27 段，大约 4 分钟。' },
+    ],
+  },
+  romance: {
+    name: '爱的罗曼史',
+    help: '西班牙吉他名曲《爱的罗曼史》（19 世纪，作者不详，公有领域）。3/4 拍，一把吉他同时弹出低音、三连音分解和弦和旋律：每拍第一个音是旋律，后两个是分解和弦。前半段 e 小调，后半段转到 E 大调，豁然开朗。',
+    excerpts: [
+      { id: 'full', name: '完整（小调 ×2 + 大调 ×2）', start: 0, cycles: 4, help: '按原谱反复：小调段两遍，大调段两遍。' },
+      { id: 'minor', name: '小调段', start: 0, cycles: 2, help: '最熟悉的那段忧伤旋律。' },
+      { id: 'major', name: '大调段', start: 2, cycles: 2, help: '转到 E 大调，情绪一下变得明亮温暖。' },
+    ],
+  },
 };
 
-/** Where to start and how long to play the original canon. */
-export const PACHELBEL_EXCERPTS = [
-  { id: 'opening', name: '从头开始', start: 1, cycles: 8, help: '第一把小提琴进来，另外两把依次追上。' },
-  { id: 'famous', name: '经典名段', start: 7, cycles: 5, help: '最有名的十六分音符段落（第 9–10 段）和它前后的铺垫。' },
-  { id: 'second-half', name: '后半段', start: 15, cycles: 8, help: '重复音、跳音和装饰音，越来越华丽。' },
-  { id: 'full', name: '完整版', start: 1, cycles: 27, help: '全部 27 段，大约 4 分钟。' },
-] as const;
+/** Song settings plus the default excerpt for a piece, to apply when it's chosen. */
+export function quoteSettings(piece: QuotePieceId, excerpt: QuoteExcerpt = QUOTE_COPY[piece].excerpts[0]!) {
+  const { song } = QUOTE_PIECES[piece];
+  return { ...song, cycles: excerpt.cycles, excerpt: excerpt.start };
+}
 
 export const ARRANGE_TEMPLATES: ArrangeTemplate[] = [
+  {
+    id: 'romance',
+    name: '爱的罗曼史（吉他）',
+    blurb: '西班牙吉他名曲原谱：3/4 拍三连音分解和弦，小调段两遍后转到 E 大调。',
+    project: {
+      ...base,
+      ...QUOTE_PIECES.romance.song,
+      cycles: 4,
+      drums: { on: false, preset: 'pop' },
+      bass: { on: false, style: 'root' },
+      harmony: { on: false, instrument: 'guitar', pattern: 'pima', strum: 'folk' },
+      melody: { on: true, instrument: 'guitar', style: 'quote', seed: 1, double: false, piece: 'romance', excerpt: 0 },
+      tricks: { build: false, fill: false, lift: false },
+      mixer: mixer(),
+    },
+  },
   {
     id: 'pachelbel',
     name: '帕赫贝尔原版卡农',
     blurb: '原曲第一小提琴的真实旋律（经典名段），另外两把小提琴依次晚一段追进来——这就是真正的卡农。',
     project: {
       ...base,
-      ...PACHELBEL_SONG,
+      ...QUOTE_PIECES.pachelbel.song,
       bpm: 104,
       cycles: 5,
       drums: { on: false, preset: 'pop' },
       bass: { on: true, style: 'root' },
       harmony: { on: true, instrument: 'pad', pattern: 'pad', strum: 'folk' },
-      melody: { on: true, instrument: 'piano', style: 'quote', seed: 1, double: false, excerpt: 7 },
+      melody: { on: true, instrument: 'piano', style: 'quote', seed: 1, double: false, piece: 'pachelbel', excerpt: 7 },
       tricks: { build: false, fill: false, lift: false },
       mixer: mixer({ harmony: { volume: 0.4, muted: false } }),
     },
@@ -62,7 +100,7 @@ export const ARRANGE_TEMPLATES: ArrangeTemplate[] = [
       bass: { on: true, style: 'root' },
       // Held chords underneath, like Pachelbel's continuo: they support the voices without crowding their register.
       harmony: { on: true, instrument: 'pad', pattern: 'pad', strum: 'folk' },
-      melody: { on: true, instrument: 'piano', style: 'canon', seed: 11, double: false, excerpt: 1 },
+      melody: { on: true, instrument: 'piano', style: 'canon', seed: 11, double: false, piece: 'pachelbel', excerpt: 1 },
       tricks: { build: false, fill: false, lift: false },
       mixer: mixer({ harmony: { volume: 0.55, muted: false } }),
     },
@@ -82,7 +120,7 @@ export const ARRANGE_TEMPLATES: ArrangeTemplate[] = [
       drums: { on: true, preset: 'boombap' },
       bass: { on: true, style: 'root' },
       harmony: { on: true, instrument: 'epiano', pattern: 'block', strum: 'folk' },
-      melody: { on: true, instrument: 'epiano', style: 'generated', seed: 5, double: false, excerpt: 1 },
+      melody: { on: true, instrument: 'epiano', style: 'generated', seed: 5, double: false, piece: 'pachelbel', excerpt: 1 },
       tricks: { build: true, fill: false, lift: false },
       mixer: mixer({ drums: { volume: 0.7, muted: false } }),
     },
@@ -102,7 +140,7 @@ export const ARRANGE_TEMPLATES: ArrangeTemplate[] = [
       drums: { on: false, preset: 'pop' },
       bass: { on: true, style: 'root' },
       harmony: { on: true, instrument: 'guitar', pattern: 'strum', strum: 'folk' },
-      melody: { on: true, instrument: 'guitar', style: 'generated', seed: 21, double: false, excerpt: 1 },
+      melody: { on: true, instrument: 'guitar', style: 'generated', seed: 21, double: false, piece: 'pachelbel', excerpt: 1 },
       tricks: { build: true, fill: false, lift: false },
       mixer: mixer(),
     },
@@ -122,7 +160,7 @@ export const ARRANGE_TEMPLATES: ArrangeTemplate[] = [
       drums: { on: true, preset: 'rock' },
       bass: { on: true, style: 'pulse' },
       harmony: { on: true, instrument: 'guitar', pattern: 'strum', strum: 'eighths' },
-      melody: { on: true, instrument: 'piano', style: 'generated', seed: 8, double: true, excerpt: 1 },
+      melody: { on: true, instrument: 'piano', style: 'generated', seed: 8, double: true, piece: 'pachelbel', excerpt: 1 },
       tricks: { build: true, fill: true, lift: true },
       mixer: mixer(),
     },
@@ -142,7 +180,7 @@ export const ARRANGE_TEMPLATES: ArrangeTemplate[] = [
       drums: { on: true, preset: 'disco' },
       bass: { on: true, style: 'octave' },
       harmony: { on: true, instrument: 'epiano', pattern: 'block', strum: 'folk' },
-      melody: { on: true, instrument: 'organ', style: 'generated', seed: 3, double: false, excerpt: 1 },
+      melody: { on: true, instrument: 'organ', style: 'generated', seed: 3, double: false, piece: 'pachelbel', excerpt: 1 },
       tricks: { build: true, fill: true, lift: false },
       mixer: mixer(),
     },
@@ -162,7 +200,7 @@ export const ARRANGE_TEMPLATES: ArrangeTemplate[] = [
       drums: { on: true, preset: 'bossa' },
       bass: { on: true, style: 'rootFifth' },
       harmony: { on: true, instrument: 'guitar', pattern: 'broken', strum: 'folk' },
-      melody: { on: true, instrument: 'epiano', style: 'generated', seed: 14, double: false, excerpt: 1 },
+      melody: { on: true, instrument: 'epiano', style: 'generated', seed: 14, double: false, piece: 'pachelbel', excerpt: 1 },
       tricks: { build: false, fill: false, lift: false },
       mixer: mixer({ drums: { volume: 0.7, muted: false } }),
     },
@@ -187,8 +225,8 @@ export const BASS_STYLE_COPY: Record<BassStyle, { name: string; help: string }> 
 export const MELODY_STYLE_COPY: Record<MelodyStyle, { name: string; help: string }> = {
   generated: { name: '自动旋律', help: '强拍落在和弦音上、其他音按音阶一步步走，每小节节奏重复。每一遍旋律相同，好记。' },
   quote: {
-    name: '原版卡农',
-    help: '帕赫贝尔《D 大调卡农》（约 1680 年，公有领域）第一小提琴的原版旋律。三把小提琴拉同一条旋律，每把晚一段进来。会自动换成卡农进行、每和弦 2 拍。',
+    name: '名曲原谱',
+    help: '照原谱演奏一首名曲（见下方曲目）。选中时会自动换成原曲的和弦、拍子和速度。',
   },
   canon: {
     name: '卡农（自动生成）',
@@ -240,8 +278,9 @@ export const ARRANGE_COPY = {
   position: (cycle: number, cycles: number) => `第 ${cycle} / ${cycles} 遍`,
   ending: '尾声',
   excerpt: '从哪里开始',
-  quoteNeedsCanon: '原版旋律是按卡农进行写的，换了和弦会不和谐。',
-  useCanonProgression: '恢复卡农进行',
+  quoteNeedsOriginal: '原谱是按原曲的和弦和拍子写的，改了会不和谐或对不上拍。',
+  useOriginalSong: '恢复原曲设置',
+  threeFour: '（3/4 拍）',
   seekHelp: '点击时间轴上的某一遍，直接跳到那里播放。',
   share: '🔗 复制分享链接',
   copied: '已复制！发给朋友，打开就是这首歌。',

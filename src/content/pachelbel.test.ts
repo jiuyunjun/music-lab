@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { Note } from 'tonal';
 import { romanToChord } from '../theory/chords';
-import { PACHELBEL_EXCERPTS, PACHELBEL_SONG } from './arrange';
+import { QUOTE_COPY } from './arrange';
+import { QUOTE_PIECES } from './quotes';
 import { PACHELBEL_VIOLIN } from './pachelbel';
 
 const names = (i: number) => PACHELBEL_VIOLIN[i]!.map(([, n]) => n);
@@ -33,13 +34,13 @@ describe('PACHELBEL_VIOLIN', () => {
   });
 
   it('the first entry lands on a chord tone on every chord', () => {
-    const chords = PACHELBEL_SONG.progression.map((r) => romanToChord('D', r));
+    const chords = QUOTE_PIECES.pachelbel.song.progression.map((r) => romanToChord('D', r));
     for (const [start, note] of PACHELBEL_VIOLIN[1]!) {
       expect(chords[start / 8]!.notes.map(Note.chroma)).toContain(Note.chroma(note));
     }
   });
 
   it('excerpts stay inside the piece', () => {
-    for (const e of PACHELBEL_EXCERPTS) expect(e.start + e.cycles - 1).toBeLessThanOrEqual(27);
+    for (const e of QUOTE_COPY.pachelbel.excerpts) expect(e.start + e.cycles - 1).toBeLessThanOrEqual(27);
   });
 });
