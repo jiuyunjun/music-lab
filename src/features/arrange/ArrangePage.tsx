@@ -14,7 +14,7 @@ import {
   TRICK_COPY,
 } from '../../content/arrange';
 import { PATTERN_COPY, PROGRESSIONS } from '../../content/chords';
-import { DRUM_PRESETS } from '../../content/drums';
+import { DRUM_GROUPS, DRUM_PRESETS } from '../../content/drums';
 import { STRUM_PATTERN_COPY } from '../../content/guitar';
 import { MODE_COPY } from '../../content/modes';
 import { INSTRUMENT_COPY } from '../../content/ui';
@@ -389,19 +389,21 @@ export function ArrangePage() {
       <div className={styles.lanes}>
         <section className={`card ${styles.lane}`} data-lane="drums">
           {laneHeader('drums')}
-          <p className={styles.help}>{LANE_COPY.drums.help}</p>
-          <div className={styles.choices}>
-            {DRUM_PRESETS.map((p) => (
-              <button
-                key={p.id}
-                className="button"
-                aria-pressed={project.drums.preset === p.id}
-                onClick={() => setLane('drums', { preset: p.id, on: true })}
-              >
-                {p.name}
-              </button>
-            ))}
+          <div className={styles.inline}>
+            {COPY.drumPreset}
+            <select value={project.drums.preset} onChange={(e) => setLane('drums', { preset: e.target.value, on: true })}>
+              {DRUM_GROUPS.map((group) => (
+                <optgroup key={group.id} label={group.name}>
+                  {DRUM_PRESETS.filter((p) => p.group === group.id).map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
           </div>
+          <p className={styles.help}>{drumPreset(project.drums.preset).help}</p>
         </section>
 
         <section className={`card ${styles.lane}`} data-lane="bass">

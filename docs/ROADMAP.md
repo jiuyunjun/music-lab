@@ -40,7 +40,8 @@
 - [x] 指板显示调内音
 - [x] 合成鼓组（无需采样）+ 鼓垫 + 键盘 A–K
 - [x] 16 步音序器：边播边改、重音、摇摆（8 分 / 16 分）
-- [x] 鼓型预设：流行、摇滚、Disco、Bossa Nova、Shuffle、Boom Bap、Dembow
+- [x] 鼓型预设 18 种，按风格分组：流行 / 摇滚（流行、摇滚、朋克、半拍慢歌、Motown）、律动 / 爵士（Shuffle、Boom Bap、Funk、Swing）、电子 / 舞曲（Disco、House、Trap、Drum & Bass）、拉丁 / 世界（Bossa Nova、Dembow、Samba、雷鬼 One Drop）、其他（进行曲）
+- [ ] 3/4、6/8 等非 4/4 拍号（需要可变步数）
 - [x] 鼓 + 和弦进行一起播放（在 M4 编曲工作台实现）
 - [x] 吉他改用真实采样（tonejs-instruments / Iowa，CC-BY 3.0），合成拨弦仅作加载前兜底
 

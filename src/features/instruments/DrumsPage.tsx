@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { getDrumKit } from '../../audio/drums';
 import { withAudio } from '../../audio/engine';
 import { setSwing, setTempo, startStepLoop, stopPhrase } from '../../audio/sequencer';
-import { DRUM_PIECE_COPY, DRUM_PRESETS, DRUMS_COPY as COPY, type DrumPreset } from '../../content/drums';
+import { DRUM_GROUPS, DRUM_PIECE_COPY, DRUM_PRESETS, DRUMS_COPY as COPY, type DrumPreset } from '../../content/drums';
 import { useAppStore } from '../../store';
 import { DRUM_PIECES, STEPS, emptyPattern, hitsAt, normalizePattern, toggleCell, type DrumPiece } from '../../theory/drums';
 import { InstrumentTabs } from './InstrumentTabs';
@@ -104,11 +104,18 @@ export function DrumsPage() {
 
       <section className={`card ${styles.section}`}>
         <div className={styles.label}>{COPY.presets}</div>
-        <div className="row">
-          {DRUM_PRESETS.map((p) => (
-            <button key={p.id} className="button" aria-pressed={preset.id === p.id} onClick={() => choosePreset(p)}>
-              {p.name}
-            </button>
+        <div className={styles.groups}>
+          {DRUM_GROUPS.map((group) => (
+            <div key={group.id} className={styles.group}>
+              <span className={styles.groupName}>{group.name}</span>
+              <div className="row">
+                {DRUM_PRESETS.filter((p) => p.group === group.id).map((p) => (
+                  <button key={p.id} className="button" aria-pressed={preset.id === p.id} onClick={() => choosePreset(p)}>
+                    {p.name}
+                  </button>
+                ))}
+              </div>
+            </div>
           ))}
         </div>
         <p className={styles.help}>{preset.help}</p>
