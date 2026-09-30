@@ -5,13 +5,17 @@ import { playEvents, stopPhrase } from '../../audio/sequencer';
 import { strumNow } from '../../audio/strum';
 import { withAudio } from '../../audio/engine';
 import { Fretboard } from '../../components/Fretboard';
-import { CHORDS_COPY } from '../../content/chords';
+import { CHORDS_COPY, PATTERN_COPY } from '../../content/chords';
 import { GUITAR_COPY as COPY, OPEN_CHORD_NAMES, STRUM_PATTERN_COPY } from '../../content/guitar';
 import { useAppStore } from '../../store';
 import { buildChord, diatonicChords, displayRoman, voiceChord, type ChordInfo } from '../../theory/chords';
 import { guitarShape } from '../../theory/guitar';
 import { degreeOf, simplestRoot } from '../../theory/modes';
+import { GUITAR_TECHNIQUES, type GuitarTechnique } from '../../theory/guitarTechniques';
 import { STRUM_PATTERNS, accompany } from '../../theory/patterns';
+
+type Technique = 'strum' | GuitarTechnique;
+const TECHNIQUES: Technique[] = ['strum', ...GUITAR_TECHNIQUES];
 import { InstrumentTabs } from './InstrumentTabs';
 import styles from './GuitarPage.module.css';
 
@@ -33,6 +37,7 @@ export function GuitarPage() {
   const [selected, setSelected] = useState<ChordInfo>(() => keyChords[0] ?? OPEN_CHORDS[0]!);
   const [showScale, setShowScale] = useState(false);
   const [rhythm, setRhythm] = useState<string>(STRUM_PATTERNS[0].id);
+  const [technique, setTechnique] = useState<Technique>('strum');
   const [looping, setLooping] = useState(false);
   const [ringing, setRinging] = useState<ReadonlySet<number>>(new Set());
   const ringTimer = useRef<number | undefined>(undefined);
@@ -53,9 +58,9 @@ export function GuitarPage() {
     flash(down);
   };
 
-  const startLoop = (chord: ChordInfo, rhythmId: string) => {
-    const pattern = STRUM_PATTERNS.find((p) => p.id === rhythmId)?.value;
-    const events = accompany([chord], { pattern: 'strum', strumPattern: pattern, bass: false });
+  const startLoop = (chord: ChordInfo, rhythmId: string, tech: Technique = technique) => {
+    const strumPattern = STRUM_PATTERNS.find((p) => p.id === rhythmId)?.value;
+    const events = accompany([chord], { pattern: tech, strumPattern, bass: false });
     setLooping(true);
     void playEvents(events, () => guitar, { bpm, loop: true, length: '1m' });
   };
@@ -152,26 +157,50 @@ export function GuitarPage() {
       </section>
 
       <section className={`card ${styles.section}`}>
-        <div className={styles.label}>{COPY.rhythm}</div>
+        <div className={styles.label}>{COPY.technique}</div>
         <div className="row">
-          {STRUM_PATTERNS.map((p) => (
+          {TECHNIQUES.map((t) => (
             <button
-              key={p.id}
+              key={t}
               className="button"
-              aria-pressed={rhythm === p.id}
+              aria-pressed={technique === t}
               onClick={() => {
-                setRhythm(p.id);
-                if (looping) startLoop(selected, p.id);
+                setTechnique(t);
+                startLoop(selected, rhythm, t);
               }}
             >
-              {STRUM_PATTERN_COPY[p.id]?.name}
-              <code className={styles.code}>{p.value}</code>
+              {t === 'strum' ? COPY.strumTechnique : PATTERN_COPY[t].name}
             </button>
           ))}
         </div>
-        <p className={styles.help}>
-          {STRUM_PATTERN_COPY[rhythm]?.help} {COPY.rhythmHelp}
-        </p>
+        <p className={styles.help}>{technique === 'strum' ? COPY.strumTechniqueHelp : PATTERN_COPY[technique].help}</p>
+
+        {technique === 'strum' && (
+          <>
+            <div className={styles.label} style={{ marginTop: 14 }}>
+              {COPY.rhythm}
+            </div>
+            <div className="row">
+              {STRUM_PATTERNS.map((p) => (
+                <button
+                  key={p.id}
+                  className="button"
+                  aria-pressed={rhythm === p.id}
+                  onClick={() => {
+                    setRhythm(p.id);
+                    if (looping) startLoop(selected, p.id);
+                  }}
+                >
+                  {STRUM_PATTERN_COPY[p.id]?.name}
+                  <code className={styles.code}>{p.value}</code>
+                </button>
+              ))}
+            </div>
+            <p className={styles.help}>
+              {STRUM_PATTERN_COPY[rhythm]?.help} {COPY.rhythmHelp}
+            </p>
+          </>
+        )}
         <div className="row" style={{ marginTop: 12 }}>
           {looping ? (
             <button className="button" onClick={stopLoop}>

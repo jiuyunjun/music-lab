@@ -99,6 +99,30 @@ export const PATTERN_COPY: Record<PatternId, { name: string; help: string }> = {
   arpeggio: { name: '琶音', help: '一路往上爬到高八度，像竖琴。' },
   alberti: { name: 'Alberti 低音', help: '低-高-中-高，古典钢琴（莫扎特）最爱的伴奏型。' },
   strum: { name: '吉他扫弦', help: '用吉他按法“下 · 下上 · 上下上”地扫，配吉他音色最像。' },
+  tremolo: {
+    name: '轮指',
+    help: '古典吉他的 p-a-m-i：拇指弹一个低音，无名指、中指、食指飞快地重复同一个高音，高音听起来像连成一条长长的线。',
+  },
+  travis: {
+    name: '指弹 Travis',
+    help: '拇指在两根低音弦之间交替打拍子（像贝斯），其他手指在反拍拨高音弦——一把吉他同时弹出低音和伴奏，民谣指弹的招牌。',
+  },
+  pima: {
+    name: '琶音 p-i-m-a',
+    help: '拇指（p）弹低音，食指（i）、中指（m）、无名指（a）依次拨 3、2、1 弦再回来，古典吉他最基础的分解和弦。',
+  },
+  rasgueado: {
+    name: '轮扫',
+    help: '弗拉门戈的 Rasgueado：四根手指一根接一根飞快地扫下去，“哗啦啦”一串，配 Phrygian 调式最有西班牙味。',
+  },
+  palmMute: {
+    name: '闷音',
+    help: '右手掌侧轻压在琴桥附近，只弹低音弦，声音变得短促发闷——摇滚里“咚咚咚”推着走的那种声音。',
+  },
+  harmonics: {
+    name: '泛音',
+    help: '手指轻触琴弦（不按下去）再拨，发出比原音高一个八度、像铃铛一样空灵的声音。',
+  },
 };
 
 export const FUNCTION_COPY: Record<HarmonicFunction, { name: string; help: string }> = {

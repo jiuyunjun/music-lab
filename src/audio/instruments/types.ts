@@ -1,3 +1,5 @@
+import type { Articulation } from '../../theory/events';
+
 export type InstrumentId = 'piano' | 'epiano' | 'organ' | 'pad' | 'bass' | 'guitar';
 
 export interface Instrument {
@@ -8,8 +10,11 @@ export interface Instrument {
   loaded: Promise<void>;
   noteOn(note: string, velocity?: number, time?: number): void;
   noteOff(note: string, time?: number): void;
-  /** Play a note for a fixed duration (Tone time, e.g. "8n"). */
-  play(note: string, duration: string | number, time?: number, velocity?: number): void;
+  /**
+   * Play a note for a fixed duration (Tone time, e.g. "8n"). Instruments that
+   * don't know an articulation (e.g. "muted") just play the note normally.
+   */
+  play(note: string, duration: string | number, time?: number, velocity?: number, articulation?: Articulation): void;
   releaseAll(): void;
   dispose(): void;
 }

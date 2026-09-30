@@ -1,7 +1,8 @@
 import { Note } from 'tonal';
 import { bassNote, voiceChord, type ChordInfo } from './chords';
-import { sixteenths, type NoteEvent } from './events';
+import { parseSixteenths, sixteenths, type NoteEvent } from './events';
 import { guitarShape } from './guitar';
+import { GUITAR_TECHNIQUES, guitarTechnique, type GuitarTechnique } from './guitarTechniques';
 
 /** melody / chords / bass / drums, plus "counter" for a second melodic voice (canon). */
 export type TrackId = 'melody' | 'counter' | 'chords' | 'bass' | 'drums';
@@ -12,9 +13,15 @@ export interface ArrangedEvent extends NoteEvent {
   step: number;
 }
 
-/** How the chord hand plays each chord ("texture"). */
-export const PATTERN_IDS = ['block', 'pad', 'broken', 'arpeggio', 'alberti', 'strum'] as const;
+/** How the chord hand plays each chord ("texture"). Works on any instrument. */
+export const BASE_PATTERN_IDS = ['block', 'pad', 'broken', 'arpeggio', 'alberti', 'strum'] as const;
+/** Every texture, including guitar picking techniques (best on the guitar). */
+export const PATTERN_IDS = [...BASE_PATTERN_IDS, ...GUITAR_TECHNIQUES] as const;
 export type PatternId = (typeof PATTERN_IDS)[number];
+
+export function isGuitarTechnique(pattern: PatternId): pattern is GuitarTechnique {
+  return (GUITAR_TECHNIQUES as readonly string[]).includes(pattern);
+}
 
 /**
  * Strumming rhythms: one character per eighth note of a 4/4 bar.
@@ -84,7 +91,11 @@ export function accompany(chords: ChordInfo[], options: AccompanyOptions): Arran
       else for (let t = 0; t < length; t += 8) push(t, root, 8, accent(start + t, 0.8), 'bass');
     }
 
-    if (pattern === 'pad') {
+    if (isGuitarTechnique(pattern)) {
+      for (const e of guitarTechnique(chord, pattern, length, start % 16)) {
+        events.push({ ...e, time: sixteenths(start + parseSixteenths(e.time)), track: 'chords', step });
+      }
+    } else if (pattern === 'pad') {
       voicing.forEach((note) => push(0, note, length, 0.35));
     } else if (pattern === 'block') {
       const hit = Math.min(8, length);

@@ -44,6 +44,7 @@ npm run lint       # ESLint + tsc --noEmit
   - `patterns.ts`：`accompany(chords, {pattern})` → 带 `track`（melody/chords/bass）与 `step` 的事件
   - `keyboard.ts`：键位、电脑键盘映射
   - `guitar.ts`：`guitarShape(chord)`（开放和弦表 → E/A 型横按）、`noteAt(string, fret)`
+  - `guitarTechniques.ts`：`guitarTechnique(chord, technique, length, barOffset)` 生成轮指 / Travis / p-i-m-a / 轮扫 / 闷音 / 泛音；这些也是 `PatternId`，`accompany` 会自动委托。`NoteEvent.articulation`（`muted` / `harmonic`）经 `Instrument.play` 的第 5 个参数传给乐器，不支持的乐器按普通音演奏
   - `drums.ts`：16 步鼓型（`X` 重音 / `x` 普通 / `.` 休止）、`hitsAt`、`drumEvents`
 - `audio/drums.ts`：`getDrumKit().hit(piece, time, velocity)`，纯合成鼓组
 - `audio/sequencer.ts` 的 `startStepLoop` 每个十六分音符回调一次并实时读取鼓型；`NoteEvent.offset`（秒）用于扫弦的弦间延迟

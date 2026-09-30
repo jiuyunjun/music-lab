@@ -22,7 +22,7 @@ import { BASS_STYLES } from '../../theory/bass';
 import { diatonicChords, displayRoman, reharmonize, romanToChord } from '../../theory/chords';
 import { sixteenths } from '../../theory/events';
 import { MODE_IDS, simplestRoot, type ModeId } from '../../theory/modes';
-import { PATTERN_IDS, STRUM_PATTERNS } from '../../theory/patterns';
+import { BASE_PATTERN_IDS, PATTERN_IDS, STRUM_PATTERNS } from '../../theory/patterns';
 import { ENDING_LENGTH, buildSong, type SongEvent } from '../../theory/song';
 import {
   DEFAULT_PROJECT,
@@ -430,7 +430,7 @@ export function ArrangePage() {
             {instrumentSelect(project.harmony.instrument, HARMONY_INSTRUMENTS, (v) => setLane('harmony', { instrument: v }))}
           </div>
           <div className={styles.choices}>
-            {PATTERN_IDS.map((id) => (
+            {(project.harmony.instrument === 'guitar' ? PATTERN_IDS : BASE_PATTERN_IDS).map((id) => (
               <button
                 key={id}
                 className="button"

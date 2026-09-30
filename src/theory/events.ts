@@ -9,7 +9,12 @@ export interface NoteEvent {
   velocity: number;
   /** Extra delay in seconds after `time`, e.g. the spread between strings in a strum. */
   offset?: number;
+  /** How the note is played; instruments that don't support it play it normally. */
+  articulation?: Articulation;
 }
+
+/** muted: palm-muted, short and dark; harmonic: bell-like guitar harmonic. */
+export type Articulation = 'muted' | 'harmonic';
 
 /**
  * One step of a degree-based melody: [degree, octaveShift, lengthIn16ths].

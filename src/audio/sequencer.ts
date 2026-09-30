@@ -55,7 +55,9 @@ export async function playEvents<E extends NoteEvent>(
   const part = new Tone.Part<NoteEvent>((time, value) => {
     const event = value as E;
     const gain = options.gainFor ? options.gainFor(event) : 1;
-    if (gain > 0) instrumentFor(event).play(event.note, event.duration, time + (event.offset ?? 0), event.velocity * gain);
+    if (gain > 0) {
+      instrumentFor(event).play(event.note, event.duration, time + (event.offset ?? 0), event.velocity * gain, event.articulation);
+    }
     if (options.onNote) Tone.getDraw().schedule(() => options.onNote?.(event), time);
   }, events);
 

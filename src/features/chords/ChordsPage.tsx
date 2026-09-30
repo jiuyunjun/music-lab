@@ -28,7 +28,7 @@ import {
 } from '../../theory/chords';
 import { keyId } from '../../theory/keyboard';
 import { degreeOf, simplestRoot } from '../../theory/modes';
-import { PATTERN_IDS, accompany, progressionLength, type PatternId } from '../../theory/patterns';
+import { BASE_PATTERN_IDS, PATTERN_IDS, accompany, progressionLength, type PatternId } from '../../theory/patterns';
 import styles from './ChordsPage.module.css';
 
 const CHROMAS = Array.from({ length: 12 }, (_, i) => i);
@@ -311,7 +311,7 @@ export function ChordsPage() {
 
             <div className={styles.label}>{COPY.pattern}</div>
             <div className="row">
-              {PATTERN_IDS.map((id) => (
+              {(instrumentId === 'guitar' ? PATTERN_IDS : BASE_PATTERN_IDS).map((id) => (
                 <button
                   key={id}
                   className="button"
